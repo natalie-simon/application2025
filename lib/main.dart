@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'core/config/env_config.dart';
+import 'features/home/presentation/screens/landing_screen.dart';
 
 void main() {
-  runApp(const AssbtApp());
+  // Afficher la configuration au démarrage
+  EnvConfig.logConfig();
+  
+  runApp(const ProviderScope(child: AssbtApp()));
 }
 
 class AssbtApp extends StatelessWidget {
@@ -13,7 +19,7 @@ class AssbtApp extends StatelessWidget {
     return MaterialApp(
       title: 'ASSBT App',
       theme: AppTheme.theme,
-      home: const MyHomePage(title: 'ASSBT'),
+      home: const LandingScreen(),
     );
   }
 }
