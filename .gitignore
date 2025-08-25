@@ -81,9 +81,9 @@ coverage/
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
 # Environment files
-.env
 .env.local
 .env.production
+# Note: .env is tracked for development configuration
 
 # Firebase
 **/ios/firebase_app_id_file.json
