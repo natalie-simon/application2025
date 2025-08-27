@@ -2,7 +2,7 @@ name: assbt
 description: Association Sportive de Subaquatique du Bassin Toulonnais
 publish_to: 'none'
 
-version: 0.1.0-beta+1
+version: 0.3.0-beta+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
