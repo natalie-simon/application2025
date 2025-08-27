@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/articles/presentation/screens/article_detail_screen.dart';
+import '../../features/activities/presentation/screens/activities_screen.dart';
 
 /// Configuration des routes de l'application
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -27,6 +28,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final id = int.parse(idString);
           return ArticleDetailScreen(articleId: id);
         },
+      ),
+      
+      // Route des activités
+      GoRoute(
+        path: '/activities',
+        name: 'activities',
+        builder: (context, state) => const ActivitiesScreen(),
       ),
       
       // Routes futures (commentées pour l'instant)
@@ -94,4 +102,7 @@ extension AppRouterExtension on GoRouter {
   
   /// Navigation vers un article
   void goToArticle(int articleId) => go('/article/$articleId');
+  
+  /// Navigation vers les activités
+  void goToActivities() => go('/activities');
 }

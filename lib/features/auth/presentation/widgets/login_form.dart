@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/assbt_button.dart';
 import '../providers/auth_provider.dart';
@@ -39,7 +40,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     
-    // Effacer l'erreur quand l'utilisateur recommence à taper
+    // Gérer les changements d'état d'authentification
     ref.listen(authProvider, (previous, next) {
       if (next.error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -55,6 +56,14 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             ref.read(authProvider.notifier).clearError();
           }
         });
+      }
+      
+      // Si la connexion réussit, fermer le drawer et aller aux activités
+      if (previous?.isAuthenticated == false && next.isAuthenticated && mounted) {
+        // Fermer le drawer
+        Navigator.of(context).pop();
+        // Naviguer vers les activités
+        context.go('/activities');
       }
     });
 

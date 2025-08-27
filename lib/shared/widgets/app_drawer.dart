@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/widgets/login_form.dart';
@@ -135,7 +136,18 @@ class AppDrawer extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.home, color: AppColors.primary),
                 title: const Text('Accueil'),
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context.go('/');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_today, color: AppColors.primary),
+                title: const Text('Activités'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context.go('/activities');
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.person, color: AppColors.primary),
