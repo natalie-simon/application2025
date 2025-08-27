@@ -99,3 +99,6 @@ coverage/
 **/ios/fastlane/Preview.html
 **/ios/fastlane/screenshots
 **/ios/fastlane/test_output
+
+# Claude Code files
+.claude/

@@ -76,51 +76,31 @@ class ArticlesNotifier extends StateNotifier<ArticlesState> {
         debugPrint('✅ ${articles.length} articles chargés depuis l\'API');
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Erreur chargement articles API, utilisation du fallback: $e');
+      String errorMessage = 'Erreur inconnue';
+      
+      if (e.toString().contains('SocketException')) {
+        errorMessage = 'Pas de connexion internet disponible';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage = 'Délai de connexion dépassé';
+      } else if (e.toString().contains('HandshakeException')) {
+        errorMessage = 'Erreur de certificat SSL';
+      } else if (e.toString().contains('Connection refused')) {
+        errorMessage = 'Serveur indisponible';
+      } else {
+        errorMessage = 'Erreur réseau: ${e.toString()}';
       }
 
-      // Utiliser des articles de démonstration en cas d'erreur réseau
-      final fallbackArticles = [
-        const Article(
-          id: 1,
-          titre: "Sortie plongée aux îles d'Hyères",
-          contenu: "<p>Une magnifique sortie plongée est organisée le week-end prochain aux îles d'Hyères. Venez découvrir les fonds marins exceptionnels de la région!</p><p>Rendez-vous à 8h au port de Toulon.</p>",
-          statut: "PUBLIE",
-          categorie: "VISITEURS",
-          image: ArticleImage(url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop"),
-          redacteur: ArticleRedacteur(email: "demo@assbt.fr"),
-        ),
-        const Article(
-          id: 2,
-          titre: "Assemblée générale 2025",
-          contenu: "<p>L'assemblée générale annuelle de l'ASSBT aura lieu le mois prochain. Tous les membres sont invités à y participer pour découvrir le bilan de l'année et les projets à venir.</p><p>Date : 15 février 2025 à 19h</p>",
-          statut: "PUBLIE",
-          categorie: "VISITEURS",
-          image: ArticleImage(url: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=600&fit=crop"),
-          redacteur: ArticleRedacteur(email: "demo@assbt.fr"),
-        ),
-        const Article(
-          id: 3,
-          titre: "Nouveau matériel de plongée",
-          contenu: "<p>L'association vient d'acquérir du nouveau matériel de plongée de dernière génération. Les membres peuvent désormais bénéficier d'équipements de qualité supérieure.</p><p>Réservations au local tous les mardis soirs.</p>",
-          statut: "PUBLIE",
-          categorie: "VISITEURS",
-          image: ArticleImage(url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&h=600&fit=crop"),
-          redacteur: ArticleRedacteur(email: "demo@assbt.fr"),
-        ),
-      ];
+      if (kDebugMode) {
+        debugPrint('❌ Erreur chargement articles API: $e');
+        debugPrint('📱 Message d\'erreur: $errorMessage');
+      }
 
       state = state.copyWith(
-        articles: fallbackArticles,
+        articles: [],
         isLoading: false,
-        error: null, // Pas d'erreur visible, on utilise le fallback
-        totalRecords: fallbackArticles.length,
+        error: errorMessage,
+        totalRecords: 0,
       );
-
-      if (kDebugMode) {
-        debugPrint('✅ ${fallbackArticles.length} articles de démonstration chargés');
-      }
     }
   }
 
