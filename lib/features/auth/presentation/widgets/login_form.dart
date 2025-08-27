@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/assbt_button.dart';
 import '../providers/auth_provider.dart';
 
@@ -19,6 +20,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
   
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  bool _hasLoadedCredentials = false;
 
   @override
   void dispose() {
@@ -27,12 +29,46 @@ class _LoginFormState extends ConsumerState<LoginForm> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    if (_hasLoadedCredentials) {
+      AppLogger.debug('Identifiants déjà chargés, skip', tag: 'LOGIN_FORM');
+      return;
+    }
+    
+    AppLogger.info('Tentative de chargement des identifiants sauvegardés dans le formulaire', tag: 'LOGIN_FORM');
+    
+    final credentials = await ref.read(authProvider.notifier).loadSavedCredentials();
+    if (credentials != null) {
+      AppLogger.info('Identifiants trouvés, remplissage automatique du formulaire pour: ***@${credentials.email.split('@').last}', tag: 'LOGIN_FORM');
+      
+      setState(() {
+        _emailController.text = credentials.email;
+        _passwordController.text = credentials.password;
+        _rememberMe = true;
+        _hasLoadedCredentials = true;
+      });
+      
+      AppLogger.debug('Formulaire rempli automatiquement avec succès', tag: 'LOGIN_FORM');
+    } else {
+      AppLogger.info('Aucun identifiant sauvegardé trouvé, formulaire vide', tag: 'LOGIN_FORM');
+      setState(() {
+        _hasLoadedCredentials = true;
+      });
+    }
+  }
+
   void _handleLogin() {
     if (_formKey.currentState?.validate() ?? false) {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       
-      ref.read(authProvider.notifier).signIn(email, password);
+      ref.read(authProvider.notifier).signIn(email, password, rememberMe: _rememberMe);
     }
   }
 

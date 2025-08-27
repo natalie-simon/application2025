@@ -10,6 +10,9 @@ import '../../domain/models/user.dart';
 class StorageKeys {
   static const String token = 'auth_token';
   static const String user = 'auth_user';
+  static const String savedEmail = 'saved_email';
+  static const String savedPassword = 'saved_password';
+  static const String rememberMe = 'remember_me';
 }
 
 /// État d'authentification
@@ -90,8 +93,71 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Chargement des identifiants sauvegardés
+  Future<SavedCredentials?> loadSavedCredentials() async {
+    try {
+      AppLogger.info('Tentative de chargement des identifiants sauvegardés', tag: 'AUTH_PROVIDER');
+      
+      final rememberMe = await _secureStorage.read(key: StorageKeys.rememberMe);
+      AppLogger.debug('RememberMe status: $rememberMe', tag: 'AUTH_PROVIDER');
+      
+      if (rememberMe != 'true') {
+        AppLogger.info('Aucun identifiant à charger (rememberMe: $rememberMe)', tag: 'AUTH_PROVIDER');
+        return null;
+      }
+
+      final email = await _secureStorage.read(key: StorageKeys.savedEmail);
+      final password = await _secureStorage.read(key: StorageKeys.savedPassword);
+      
+      AppLogger.debug('Identifiants trouvés - Email: ${email != null ? "***@${email.split('@').last}" : "null"}, Password: ${password != null ? "****" : "null"}', tag: 'AUTH_PROVIDER');
+
+      if (email != null && password != null) {
+        AppLogger.info('Identifiants sauvegardés chargés avec succès pour: ***@${email.split('@').last}', tag: 'AUTH_PROVIDER');
+        return SavedCredentials(email: email, password: password);
+      } else {
+        AppLogger.warning('Identifiants incomplets trouvés dans le stockage', tag: 'AUTH_PROVIDER');
+      }
+    } catch (e) {
+      AppLogger.error('Erreur lors du chargement des identifiants sauvegardés', tag: 'AUTH_PROVIDER', error: e);
+    }
+    
+    AppLogger.info('Aucun identifiant valide trouvé', tag: 'AUTH_PROVIDER');
+    return null;
+  }
+
+  /// Sauvegarde des identifiants
+  Future<void> saveCredentials(String email, String password, bool remember) async {
+    try {
+      AppLogger.info('Tentative de sauvegarde des identifiants - Remember: $remember, Email: ***@${email.split('@').last}', tag: 'AUTH_PROVIDER');
+      
+      if (remember) {
+        await _secureStorage.write(key: StorageKeys.savedEmail, value: email);
+        await _secureStorage.write(key: StorageKeys.savedPassword, value: password);
+        await _secureStorage.write(key: StorageKeys.rememberMe, value: 'true');
+        
+        AppLogger.info('Identifiants sauvegardés avec succès pour: ***@${email.split('@').last}', tag: 'AUTH_PROVIDER');
+      } else {
+        AppLogger.info('Suppression des identifiants sauvegardés (remember=false)', tag: 'AUTH_PROVIDER');
+        await _clearSavedCredentials();
+      }
+    } catch (e) {
+      AppLogger.error('Erreur lors de la sauvegarde des identifiants', tag: 'AUTH_PROVIDER', error: e);
+    }
+  }
+
+  /// Suppression des identifiants sauvegardés
+  Future<void> _clearSavedCredentials() async {
+    AppLogger.info('Suppression des identifiants sauvegardés du stockage sécurisé', tag: 'AUTH_PROVIDER');
+    
+    await _secureStorage.delete(key: StorageKeys.savedEmail);
+    await _secureStorage.delete(key: StorageKeys.savedPassword);
+    await _secureStorage.delete(key: StorageKeys.rememberMe);
+    
+    AppLogger.debug('Identifiants sauvegardés supprimés avec succès', tag: 'AUTH_PROVIDER');
+  }
+
   /// Connexion utilisateur
-  Future<void> signIn(String email, String password) async {
+  Future<void> signIn(String email, String password, {bool rememberMe = false}) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -131,6 +197,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Stockage sécurisé
       await _secureStorage.write(key: StorageKeys.token, value: authResponse.token);
       await _secureStorage.write(key: StorageKeys.user, value: finalUser.toString());
+
+      // Sauvegarder les identifiants si demandé
+      await saveCredentials(email, password, rememberMe);
 
       state = state.copyWith(
         user: finalUser,
@@ -248,3 +317,14 @@ final currentUserProvider = Provider<User?>((ref) {
   final authState = ref.watch(authProvider);
   return authState.user;
 });
+
+/// Classe pour les identifiants sauvegardés
+class SavedCredentials {
+  final String email;
+  final String password;
+
+  const SavedCredentials({
+    required this.email,
+    required this.password,
+  });
+}

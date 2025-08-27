@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../shared/widgets/app_drawer.dart';
 import '../../domain/models/article.dart';
 import '../providers/articles_provider.dart';
 
@@ -16,13 +18,24 @@ class ArticleDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final articleAsync = ref.watch(articleByIdProvider(articleId));
+    final navigation = ref.watch(articleNavigationProvider(articleId));
     
     return Scaffold(
       appBar: AppBar(
         title: const Text('Article'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
+        actions: [
+          if (navigation.totalArticles > 1) ...[
+            Text(
+              '${navigation.currentIndex + 1}/${navigation.totalArticles}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(width: 16),
+          ],
+        ],
       ),
+      drawer: const AppDrawer(),
       body: articleAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(
@@ -65,6 +78,7 @@ class ArticleDetailScreen extends ConsumerWidget {
         },
         data: (article) => _buildArticleContent(context, article),
       ),
+      bottomNavigationBar: _buildNavigationBar(context, ref, navigation),
     );
   }
 
@@ -174,6 +188,111 @@ class ArticleDetailScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationBar(BuildContext context, WidgetRef ref, ArticleNavigation navigation) {
+    if (!navigation.hasPrevious && !navigation.hasNext) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.grey300,
+            width: 1,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Bouton retour à l'accueil
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  context.go('/');
+                },
+                icon: const Icon(Icons.home, size: 16),
+                label: const Text('Retour à l\'accueil'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.info,
+                  foregroundColor: AppColors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // Navigation entre articles
+            if (navigation.hasPrevious || navigation.hasNext)
+              Row(
+                children: [
+                  // Bouton Article précédent
+                  Expanded(
+                    child: navigation.hasPrevious
+                        ? ElevatedButton.icon(
+                            onPressed: () {
+                              context.go('/article/${navigation.previousArticle!.id}');
+                            },
+                            icon: const Icon(Icons.arrow_back_ios, size: 16),
+                            label: Text(
+                              'Précédent',
+                              style: const TextStyle(fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.white,
+                              foregroundColor: AppColors.primary,
+                              side: BorderSide(color: AppColors.primary),
+                              elevation: 0,
+                            ),
+                          )
+                        : const SizedBox(),
+                  ),
+                  
+                  const SizedBox(width: 16),
+                  
+                  // Bouton Article suivant
+                  Expanded(
+                    child: navigation.hasNext
+                        ? ElevatedButton.icon(
+                            onPressed: () {
+                              context.go('/article/${navigation.nextArticle!.id}');
+                            },
+                            icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                            label: Text(
+                              'Suivant',
+                              style: const TextStyle(fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
+                            ),
+                          )
+                        : const SizedBox(),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }

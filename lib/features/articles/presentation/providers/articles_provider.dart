@@ -107,3 +107,47 @@ final articleByIdProvider = FutureProvider.family<Article, int>((ref, id) async 
   final service = ref.watch(articlesServiceProvider);
   return service.getArticleById(id);
 });
+
+/// Provider pour la navigation entre articles
+final articleNavigationProvider = Provider.family<ArticleNavigation, int>((ref, currentArticleId) {
+  final articlesState = ref.watch(articlesProvider);
+  final articles = articlesState.articles;
+  
+  if (articles.isEmpty) {
+    return const ArticleNavigation();
+  }
+  
+  final currentIndex = articles.indexWhere((article) => article.id == currentArticleId);
+  
+  if (currentIndex == -1) {
+    return const ArticleNavigation();
+  }
+  
+  final hasPrevious = currentIndex > 0;
+  final hasNext = currentIndex < articles.length - 1;
+  
+  return ArticleNavigation(
+    previousArticle: hasPrevious ? articles[currentIndex - 1] : null,
+    nextArticle: hasNext ? articles[currentIndex + 1] : null,
+    currentIndex: currentIndex,
+    totalArticles: articles.length,
+  );
+});
+
+/// Classe pour la navigation entre articles
+class ArticleNavigation {
+  final Article? previousArticle;
+  final Article? nextArticle;
+  final int currentIndex;
+  final int totalArticles;
+  
+  const ArticleNavigation({
+    this.previousArticle,
+    this.nextArticle,
+    this.currentIndex = 0,
+    this.totalArticles = 0,
+  });
+  
+  bool get hasPrevious => previousArticle != null;
+  bool get hasNext => nextArticle != null;
+}
