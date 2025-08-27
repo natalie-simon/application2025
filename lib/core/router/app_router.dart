@@ -1,47 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/articles/presentation/screens/article_detail_screen.dart';
 
 /// Configuration des routes de l'application
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
 
   return GoRouter(
     debugLogDiagnostics: true,
     initialLocation: '/',
-    redirect: (context, state) {
-      final isAuthenticated = authState.isAuthenticated;
-      final isLoggingIn = state.matchedLocation == '/login';
-
-      // Si pas connecté et pas sur la page de login, rediriger vers login
-      if (!isAuthenticated && !isLoggingIn) {
-        return '/login';
-      }
-
-      // Si connecté et sur la page de login, rediriger vers home
-      if (isAuthenticated && isLoggingIn) {
-        return '/';
-      }
-
-      // Sinon, laisser la navigation normale
-      return null;
-    },
     routes: [
-      // Route de connexion
-      GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      
-      // Route d'accueil (protégée)
+      // Route d'accueil (accessible à tous)
       GoRoute(
         path: '/',
         name: 'home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      
+      // Route d'article détaillé
+      GoRoute(
+        path: '/article/:id',
+        name: 'article',
+        builder: (context, state) {
+          final idString = state.pathParameters['id']!;
+          final id = int.parse(idString);
+          return ArticleDetailScreen(articleId: id);
+        },
       ),
       
       // Routes futures (commentées pour l'instant)
@@ -106,4 +91,7 @@ extension AppRouterExtension on GoRouter {
   
   /// Déconnexion (va automatiquement vers login grâce au redirect)
   void logout() => go('/login');
+  
+  /// Navigation vers un article
+  void goToArticle(int articleId) => go('/article/$articleId');
 }

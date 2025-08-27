@@ -9,25 +9,24 @@ part of 'auth_response_v2.dart';
 AuthResponseV2 _$AuthResponseV2FromJson(Map<String, dynamic> json) =>
     AuthResponseV2(
       token: json['accessToken'] as String,
-      profil: json['profil'] == null
-          ? null
-          : UserProfile.fromJson(json['profil'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$AuthResponseV2ToJson(AuthResponseV2 instance) =>
-    <String, dynamic>{'accessToken': instance.token, 'profil': instance.profil};
+    <String, dynamic>{
+      'accessToken': instance.token,
+    };
 
 UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
-  id: (json['id'] as num).toInt(),
-  nom: json['nom'] as String,
-  prenom: json['prenom'] as String,
-  telephone: json['telephone'] as String?,
-  communicationMail: json['communication_mail'] as bool?,
-  communicationSms: json['communication_sms'] as bool?,
-  avatarId: (json['avatarId'] as num?)?.toInt(),
-  membreId: (json['membreId'] as num).toInt(),
-  avatar: json['avatar'],
-);
+      id: (json['id'] as num).toInt(),
+      nom: json['nom'] as String,
+      prenom: json['prenom'] as String,
+      telephone: json['telephone'] as String?,
+      communicationMail: json['communication_mail'] as bool?,
+      communicationSms: json['communication_sms'] as bool?,
+      avatarId: (json['avatarId'] as num?)?.toInt(),
+      membreId: (json['membreId'] as num).toInt(),
+      avatar: json['avatar'],
+    );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
     <String, dynamic>{

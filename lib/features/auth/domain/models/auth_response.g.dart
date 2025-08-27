@@ -7,10 +7,10 @@ part of 'auth_response.dart';
 // **************************************************************************
 
 AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(
-  success: json['success'] as bool,
-  message: json['message'] as String,
-  data: AuthData.fromJson(json['data'] as Map<String, dynamic>),
-);
+      success: json['success'] as bool,
+      message: json['message'] as String,
+      data: AuthData.fromJson(json['data'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$AuthResponseToJson(AuthResponse instance) =>
     <String, dynamic>{
@@ -20,11 +20,11 @@ Map<String, dynamic> _$AuthResponseToJson(AuthResponse instance) =>
     };
 
 AuthData _$AuthDataFromJson(Map<String, dynamic> json) => AuthData(
-  token: json['token'] as String,
-  user: User.fromJson(json['user'] as Map<String, dynamic>),
-);
+      token: json['token'] as String,
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$AuthDataToJson(AuthData instance) => <String, dynamic>{
-  'token': instance.token,
-  'user': instance.user,
-};
+      'token': instance.token,
+      'user': instance.user,
+    };

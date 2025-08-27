@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter/foundation.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import '../../../../core/utils/logger.dart';
 import '../../data/services/auth_service.dart';
 import '../../domain/models/login_request.dart';
 import '../../domain/models/user.dart';
@@ -55,9 +56,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Chargement des données d'authentification stockées
   Future<void> _loadStoredAuth() async {
-    if (kDebugMode) {
-      debugPrint('🔄 Chargement des données d\'authentification stockées');
-    }
+    AppLogger.info('Chargement des données d\'authentification stockées', tag: 'AUTH_PROVIDER');
 
     try {
       final storedToken = await _secureStorage.read(key: StorageKeys.token);
@@ -79,18 +78,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
             isAuthenticated: true,
           );
 
-          if (kDebugMode) {
-            debugPrint('✅ Authentification automatique réussie: ${user.email}');
-          }
+          AppLogger.auth('Authentification automatique réussie', email: user.email);
         } else {
           // Token invalide, nettoyage
           await _clearStoredAuth();
         }
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Erreur lors du chargement de l\'authentification: $e');
-      }
+      AppLogger.error('Erreur lors du chargement de l\'authentification', tag: 'AUTH_PROVIDER', error: e);
       await _clearStoredAuth();
     }
   }
@@ -100,51 +95,54 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      if (kDebugMode) {
-        debugPrint('🔄 Tentative de connexion: $email');
-      }
+      AppLogger.auth('Tentative de connexion', email: email);
 
       final loginRequest = LoginRequest(email: email, password: password);
       final authResponse = await _authService.signIn(loginRequest);
 
-      // Créer un User à partir du token et du profil
-      User user;
-      if (authResponse.profil != null) {
-        user = User(
-          id: authResponse.profil!.id,
-          email: email, // L'email n'est pas dans le profil, on utilise celui de la connexion
-          role: UserRole.user, // Défaut, à ajuster selon les besoins
-          estSupprime: false,
-        );
-      } else {
-        // Fallback si pas de profil
-        user = User(
-          id: 0,
-          email: email,
-          role: UserRole.user,
-          estSupprime: false,
-        );
+      // Décoder le JWT pour extraire les informations utilisateur
+      final decodedToken = JwtDecoder.decode(authResponse.token);
+      
+      // Créer un User à partir des données du JWT
+      final userRole = _parseUserRole(decodedToken['role'] as String?);
+      final userId = (decodedToken['sub'] as num?)?.toInt() ?? 0;
+      
+      // Extraire le profil depuis le JWT
+      String? prenom;
+      String? nom;
+      
+      if (decodedToken['profil'] != null) {
+        final profil = decodedToken['profil'] as Map<String, dynamic>;
+        prenom = profil['prenom'] as String?;
+        nom = profil['nom'] as String?;
+        AppLogger.info('Profil extrait du JWT: $prenom $nom', tag: 'AUTH_PROVIDER');
       }
+
+      // Créer l'utilisateur avec les données du profil JWT
+      final finalUser = User(
+        id: userId,
+        email: decodedToken['email'] as String? ?? email,
+        role: userRole,
+        estSupprime: false,
+        prenom: prenom,
+        nom: nom,
+      );
 
       // Stockage sécurisé
       await _secureStorage.write(key: StorageKeys.token, value: authResponse.token);
-      await _secureStorage.write(key: StorageKeys.user, value: user.toString());
+      await _secureStorage.write(key: StorageKeys.user, value: finalUser.toString());
 
       state = state.copyWith(
-        user: user,
+        user: finalUser,
         token: authResponse.token,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       );
 
-      if (kDebugMode) {
-        debugPrint('✅ Connexion réussie: ${user.email}');
-      }
+      AppLogger.auth('Connexion réussie', email: finalUser.displayName);
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Erreur de connexion: $e');
-      }
+      AppLogger.error('Erreur de connexion', tag: 'AUTH_PROVIDER', error: e);
 
       String errorMessage;
       if (e is AuthServiceException) {
@@ -163,9 +161,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Déconnexion utilisateur
   Future<void> signOut() async {
-    if (kDebugMode) {
-      debugPrint('🔄 Déconnexion utilisateur');
-    }
+    AppLogger.auth('Déconnexion utilisateur');
 
     await _clearStoredAuth();
 
@@ -177,9 +173,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       error: null,
     );
 
-    if (kDebugMode) {
-      debugPrint('✅ Déconnexion réussie');
-    }
+    AppLogger.auth('Déconnexion réussie');
   }
 
   /// Nettoyage des données stockées
@@ -208,9 +202,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Mise à jour du stockage
       await _secureStorage.write(key: StorageKeys.user, value: updatedUser.toString());
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Erreur lors du rafraîchissement du profil: $e');
-      }
+      AppLogger.error('Erreur lors du rafraîchissement du profil', tag: 'AUTH_PROVIDER', error: e);
+    }
+  }
+
+  /// Convertit le rôle string en UserRole enum
+  UserRole _parseUserRole(String? roleString) {
+    switch (roleString?.toUpperCase()) {
+      case 'ADMIN':
+        return UserRole.admin;
+      case 'REDAC':
+        return UserRole.redacteur;
+      case 'USER':
+      default:
+        return UserRole.user;
     }
   }
 }

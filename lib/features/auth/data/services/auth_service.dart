@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/models/auth_response_v2.dart';
 import '../../domain/models/login_request.dart';
-import '../../domain/models/user.dart';
 
 class AuthService {
   late final Dio _dio;
@@ -23,7 +23,7 @@ class AuthService {
         responseBody: true,
         requestHeader: true,
         responseHeader: false,
-        logPrint: (obj) => debugPrint('🔐 AUTH API: $obj'),
+        logPrint: (obj) => AppLogger.debug(obj.toString(), tag: 'AUTH_API'),
       ));
     }
   }
@@ -31,9 +31,7 @@ class AuthService {
   /// Connexion utilisateur
   Future<AuthResponseV2> signIn(LoginRequest loginRequest) async {
     try {
-      if (kDebugMode) {
-        debugPrint('🔄 Tentative de connexion pour: ${loginRequest.email}');
-      }
+      AppLogger.auth('Tentative de connexion', email: loginRequest.email);
 
       // Validation côté client
       if (!loginRequest.isValid) {
@@ -48,26 +46,15 @@ class AuthService {
         data: loginRequest.toJson(),
       );
 
-      if (kDebugMode) {
-        debugPrint('📡 Réponse connexion: ${response.statusCode}');
-        debugPrint('📄 Data: ${response.data}');
-      }
+      AppLogger.apiCall('POST', '/sign-in', statusCode: response.statusCode, tag: 'AUTH');
 
       final authResponse = AuthResponseV2.fromJson(response.data);
 
-      if (kDebugMode) {
-        debugPrint('✅ Connexion réussie - Token reçu: ${authResponse.token.substring(0, 20)}...');
-        if (authResponse.profil != null) {
-          debugPrint('👤 Profil: ${authResponse.profil!.fullName}');
-        }
-      }
+      AppLogger.auth('Connexion réussie - Token reçu: ${authResponse.token.substring(0, 20)}...');
 
       return authResponse;
     } on DioException catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Erreur DioException: ${e.type}');
-        debugPrint('📄 Détails erreur: ${e.response?.data ?? e.message}');
-      }
+      AppLogger.error('Erreur DioException: ${e.type}', tag: 'AUTH', error: e.response?.data ?? e.message);
 
       String errorMessage = 'Erreur de connexion';
       int statusCode = e.response?.statusCode ?? 0;
@@ -113,9 +100,7 @@ class AuthService {
 
       throw AuthServiceException(errorMessage, statusCode);
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ Erreur générale auth: $e');
-      }
+      AppLogger.error('Erreur générale auth', tag: 'AUTH', error: e);
       throw AuthServiceException('Erreur inattendue: $e', 0);
     }
   }
@@ -138,9 +123,7 @@ class AuthService {
   /// Récupération du profil utilisateur (pour GET /auth/me)
   Future<Map<String, dynamic>> getCurrentUser(String token) async {
     try {
-      if (kDebugMode) {
-        debugPrint('🔄 Récupération du profil utilisateur');
-      }
+      AppLogger.auth('Récupération du profil utilisateur');
 
       final response = await _dio.get(
         '/me',
@@ -149,9 +132,7 @@ class AuthService {
         ),
       );
 
-      if (kDebugMode) {
-        debugPrint('📡 Profil utilisateur récupéré: ${response.statusCode}');
-      }
+      AppLogger.apiCall('GET', '/me', statusCode: response.statusCode, tag: 'AUTH');
 
       return response.data;
     } on DioException catch (e) {

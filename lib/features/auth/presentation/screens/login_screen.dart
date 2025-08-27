@@ -75,7 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   margin: const EdgeInsets.only(bottom: 32),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary,
+                    color: AppColors.white,
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primary.withValues(alpha: 0.3),
@@ -84,10 +84,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.waves,
-                    size: 60,
-                    color: AppColors.textShine,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(60),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.waves,
+                          size: 60,
+                          color: AppColors.primary,
+                        );
+                      },
+                    ),
                   ),
                 ),
                 
@@ -270,10 +281,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Lien mot de passe oublié
                         TextButton(
                           onPressed: authState.isLoading ? null : () {
-                            // TODO: Implémenter la réinitialisation du mot de passe
+                            // Fonctionnalité maintenant implémentée dans LoginForm
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Fonctionnalité à venir'),
+                                content: Text('Utilisez le formulaire de connexion dans le drawer pour réinitialiser'),
+                                backgroundColor: AppColors.primary,
                               ),
                             );
                           },

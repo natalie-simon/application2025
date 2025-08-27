@@ -21,12 +21,16 @@ class User extends Equatable {
   final UserRole role;
   @JsonKey(name: 'est_supprime')
   final bool estSupprime;
+  final String? prenom;
+  final String? nom;
 
   const User({
     required this.id,
     required this.email,
     required this.role,
     this.estSupprime = false,
+    this.prenom,
+    this.nom,
   });
 
   /// Création depuis JSON
@@ -41,12 +45,16 @@ class User extends Equatable {
     String? email,
     UserRole? role,
     bool? estSupprime,
+    String? prenom,
+    String? nom,
   }) {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
       role: role ?? this.role,
       estSupprime: estSupprime ?? this.estSupprime,
+      prenom: prenom ?? this.prenom,
+      nom: nom ?? this.nom,
     );
   }
 
@@ -67,8 +75,16 @@ class User extends Equatable {
     }
   }
 
+  /// Nom complet pour affichage (prénom + nom si disponibles, sinon email)
+  String get displayName {
+    if (prenom != null && nom != null && prenom!.isNotEmpty && nom!.isNotEmpty) {
+      return '$prenom $nom';
+    }
+    return email;
+  }
+
   @override
-  List<Object?> get props => [id, email, role, estSupprime];
+  List<Object?> get props => [id, email, role, estSupprime, prenom, nom];
 
   @override
   String toString() => 'User(id: $id, email: $email, role: $role, estSupprime: $estSupprime)';
