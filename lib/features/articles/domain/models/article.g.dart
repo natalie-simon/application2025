@@ -10,8 +10,8 @@ Article _$ArticleFromJson(Map<String, dynamic> json) => Article(
       id: (json['id'] as num).toInt(),
       titre: json['titre'] as String,
       contenu: json['contenu'] as String,
-      statut: json['statut'] as String,
-      categorie: json['categorie'] as String,
+      statut: json['statut'] as String?,
+      categorie: json['categorie'] as String?,
       dateCreation: json['date_creation'] == null
           ? null
           : DateTime.parse(json['date_creation'] as String),

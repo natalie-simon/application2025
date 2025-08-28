@@ -346,7 +346,8 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
     );
   }
 
-  Color _getStatusColor(String statut) {
+  Color _getStatusColor(String? statut) {
+    if (statut == null) return AppColors.grey500;
     switch (statut.toUpperCase()) {
       case 'PUBLIE':
         return AppColors.success;
@@ -359,7 +360,8 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
     }
   }
 
-  String _getStatusText(String statut) {
+  String _getStatusText(String? statut) {
+    if (statut == null) return 'Article';
     switch (statut.toUpperCase()) {
       case 'PUBLIE':
         return 'Publié';
