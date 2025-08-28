@@ -159,35 +159,20 @@ class AppDrawer extends ConsumerWidget {
                   );
                 },
               ),
-              if (user.isAdmin) ...[
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.people, color: AppColors.primary),
-                  title: const Text('Membres'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Membres - À implémenter')),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.article, color: AppColors.primary),
-                  title: const Text('Articles'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Articles - À implémenter')),
-                    );
-                  },
-                ),
-              ],
             ],
           ),
         ),
         
         // Bouton déconnexion
         const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.info_outline, color: AppColors.primary),
+          title: const Text('À propos'),
+          onTap: () {
+            Navigator.of(context).pop();
+            _showAboutDialog(context);
+          },
+        ),
         ListTile(
           leading: const Icon(Icons.logout, color: Colors.red),
           title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
@@ -219,7 +204,8 @@ class AppDrawer extends ConsumerWidget {
               Text(
                 'Connectez-vous pour accéder à toutes les fonctionnalités.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textLight,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -248,9 +234,7 @@ class AppDrawer extends ConsumerWidget {
                   title: const Text('À propos'),
                   onTap: () {
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('À propos - À implémenter')),
-                    );
+                    _showAboutDialog(context);
                   },
                 ),
               ],
@@ -258,6 +242,35 @@ class AppDrawer extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('À propos'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'ASSBT - Association Sportive Sub-Aquatique des Bulleurs Toulonnais',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 12),
+            Text('Version: 0.4.0-beta'),
+            SizedBox(height: 8),
+            Text('Branche: develop'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -277,6 +290,7 @@ class AppDrawer extends ConsumerWidget {
               Navigator.of(context).pop();
               Navigator.of(context).pop(); // Fermer le drawer
               ref.read(authProvider.notifier).signOut();
+              context.go('/');
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,

@@ -114,7 +114,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 8),
                 
                 Text(
-                  'Association Sportive de Subaquatique du Bassin Toulonnais',
+                  'Association Sportive Sub-Aquatique des Bulleurs Toulonnais',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textLight,

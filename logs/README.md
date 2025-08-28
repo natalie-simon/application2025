@@ -1,6 +1,6 @@
 # Logs de travail ASSBT
 
-Ce dossier contient les logs quotidiens de développement du projet ASSBT (Association Subaquatique du Bassin Toulonnais).
+Ce dossier contient les logs quotidiens de développement du projet ASSBT (Association Sportive Sub-Aquatique des Bulleurs Toulonnais).
 
 ## Structure des dossiers
 

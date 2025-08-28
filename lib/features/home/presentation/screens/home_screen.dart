@@ -128,10 +128,11 @@ class HomeScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     
                     Text(
-                      'Association Sportive de Subaquatique du Bassin Toulonnais',
+                      'Association Sportive Sub-Aquatique des Bulleurs Toulonnais',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textLight,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     
@@ -256,83 +257,8 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
               
-              // Section informations complémentaires
-              const SizedBox(height: 32),
               
-              if (!isAuthenticated) ...[
-                // Message d'invitation à se connecter
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.login,
-                            color: AppColors.primary,
-                            size: 32,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Mode Invité',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Connectez-vous depuis le menu pour accéder à toutes les fonctionnalités de l\'association.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textLight,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          Builder(
-                            builder: (context) => ElevatedButton.icon(
-                              onPressed: () => Scaffold.of(context).openDrawer(),
-                              icon: const Icon(Icons.menu),
-                              label: const Text('Ouvrir le menu'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.textShine,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
               
-              // Footer
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-                child: Column(
-                  children: [
-                    Text(
-                      '🚧 Application en cours de développement 🚧',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textLight,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Prochaines fonctionnalités :\n• Module Membres\n• Gestion des articles\n• Profil utilisateur',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textLight,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
