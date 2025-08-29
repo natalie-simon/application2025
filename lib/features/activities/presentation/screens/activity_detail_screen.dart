@@ -163,7 +163,7 @@ class ActivityDetailScreen extends ConsumerWidget {
                   _buildInfoRow(context, Icons.calendar_today, 'Date', DateFormat('EEEE dd MMMM yyyy', 'fr_FR').format(activity.startDateTime)),
                   _buildInfoRow(context, Icons.access_time, 'Horaires', '${DateFormat('HH:mm').format(activity.startDateTime)} - ${DateFormat('HH:mm').format(activity.endDateTime)}'),
                   _buildInfoRow(context, Icons.people, 'Places', '${activity.registeredCount}/${activity.maxParticipants}'),
-                  _buildInfoRow(context, Icons.event_available, 'Inscription jusqu\'au', DateFormat('dd/MM/yyyy à HH:mm').format(activity.registrationDeadline)),
+                  _buildInfoRow(context, Icons.event_available, 'Inscription jusqu\'au', DateFormat('dd/MM/yyyy à HH:mm').format(activity.effectiveRegistrationDeadline)),
                 ]),
 
                 if (activity.contenu != null && activity.contenu!.isNotEmpty) ...[
@@ -768,19 +768,26 @@ class ActivityDetailScreen extends ConsumerWidget {
   }
 
   String _getParticipantInitial(Member member) {
-    final prenom = member.profil.prenom.trim();
-    if (prenom.isNotEmpty) {
-      return prenom[0].toUpperCase();
-    }
-    final nom = member.profil.nom.trim();
-    if (nom.isNotEmpty) {
-      return nom[0].toUpperCase();
+    if (member.profil != null) {
+      final prenom = member.profil!.prenom?.trim() ?? '';
+      if (prenom.isNotEmpty) {
+        return prenom[0].toUpperCase();
+      }
+      final nom = member.profil!.nom?.trim() ?? '';
+      if (nom.isNotEmpty) {
+        return nom[0].toUpperCase();
+      }
     }
     return member.email[0].toUpperCase();
   }
 
   String _getParticipantDisplayName(Member member) {
-    final displayName = member.profil.displayName.trim();
-    return displayName.isNotEmpty ? displayName : member.email;
+    if (member.profil != null) {
+      final displayName = member.profil!.displayName.trim();
+      if (displayName.isNotEmpty) {
+        return displayName;
+      }
+    }
+    return member.email;
   }
 }

@@ -16,8 +16,9 @@ ActivityDetail _$ActivityDetailFromJson(Map<String, dynamic> json) =>
       cancellationReason: json['motif_annulation'] as String?,
       maxParticipants: (json['max_participant'] as num).toInt(),
       waitingListCount: (json['nbr_attente'] as num).toInt(),
-      registrationDeadline:
-          DateTime.parse(json['date_heure_limite_inscription'] as String),
+      registrationDeadline: json['date_heure_limite_inscription'] == null
+          ? null
+          : DateTime.parse(json['date_heure_limite_inscription'] as String),
       categorieId: (json['categorieId'] as num).toInt(),
       categorie:
           ActivityCategory.fromJson(json['categorie'] as Map<String, dynamic>),
@@ -37,7 +38,7 @@ Map<String, dynamic> _$ActivityDetailToJson(ActivityDetail instance) =>
       'max_participant': instance.maxParticipants,
       'nbr_attente': instance.waitingListCount,
       'date_heure_limite_inscription':
-          instance.registrationDeadline.toIso8601String(),
+          instance.registrationDeadline?.toIso8601String(),
       'categorieId': instance.categorieId,
       'categorie': instance.categorie,
       'participants': instance.participants,
