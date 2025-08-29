@@ -275,6 +275,40 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Connexion avec token existant (ex: après inscription)
+  Future<void> loginWithToken(String token, Map<String, dynamic> userData) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      AppLogger.auth('Connexion automatique avec token', email: userData['email'] as String?);
+
+      // Créer un User à partir des données reçues
+      final user = User.fromJson(userData);
+
+      // Stockage sécurisé
+      await _secureStorage.write(key: StorageKeys.token, value: token);
+      await _secureStorage.write(key: StorageKeys.user, value: user.toString());
+
+      state = state.copyWith(
+        user: user,
+        token: token,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      );
+
+      AppLogger.auth('Connexion automatique réussie', email: user.displayName);
+    } catch (e) {
+      AppLogger.error('Erreur lors de la connexion automatique', tag: 'AUTH_PROVIDER', error: e);
+
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Erreur lors de la connexion automatique',
+        isAuthenticated: false,
+      );
+    }
+  }
+
   /// Convertit le rôle string en UserRole enum
   UserRole _parseUserRole(String? roleString) {
     switch (roleString?.toUpperCase()) {

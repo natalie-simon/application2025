@@ -32,7 +32,10 @@ class MemberProfile extends Equatable {
 
   Map<String, dynamic> toJson() => _$MemberProfileToJson(this);
 
-  String get displayName => '$prenom $nom';
+  String get displayName {
+    final fullName = '$prenom $nom'.trim();
+    return fullName.isNotEmpty ? fullName : '';
+  }
 
   @override
   List<Object?> get props => [

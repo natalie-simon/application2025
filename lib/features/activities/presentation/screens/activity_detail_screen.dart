@@ -312,7 +312,7 @@ class ActivityDetailScreen extends ConsumerWidget {
                 CircleAvatar(
                   backgroundColor: AppColors.primary.withOpacity(0.1),
                   child: Text(
-                    participant.membre.profil.prenom[0].toUpperCase(),
+                    _getParticipantInitial(participant.membre),
                     style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -325,7 +325,7 @@ class ActivityDetailScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        participant.membre.profil.displayName,
+                        _getParticipantDisplayName(participant.membre),
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -765,5 +765,22 @@ class ActivityDetailScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _getParticipantInitial(Member member) {
+    final prenom = member.profil.prenom.trim();
+    if (prenom.isNotEmpty) {
+      return prenom[0].toUpperCase();
+    }
+    final nom = member.profil.nom.trim();
+    if (nom.isNotEmpty) {
+      return nom[0].toUpperCase();
+    }
+    return member.email[0].toUpperCase();
+  }
+
+  String _getParticipantDisplayName(Member member) {
+    final displayName = member.profil.displayName.trim();
+    return displayName.isNotEmpty ? displayName : member.email;
   }
 }
