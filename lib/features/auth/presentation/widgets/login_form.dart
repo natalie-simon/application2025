@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/assbt_button.dart';
 import '../providers/auth_provider.dart';
+import 'forgot_password_modal.dart';
 
 class LoginForm extends ConsumerStatefulWidget {
   const LoginForm({super.key});
@@ -259,7 +260,10 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           // Lien mot de passe oublié
           TextButton(
             onPressed: authState.isLoading ? null : () {
-              _showPasswordResetDialog(context);
+              showDialog(
+                context: context,
+                builder: (context) => const ForgotPasswordModal(),
+              );
             },
             child: Text(
               'Mot de passe oublié ?',
@@ -268,55 +272,6 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPasswordResetDialog(BuildContext context) {
-    final emailController = TextEditingController();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Réinitialiser le mot de passe'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Entrez votre adresse email pour recevoir un lien de réinitialisation.',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'votre.email@exemple.com',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Simuler l'envoi de l'email
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Un email de réinitialisation a été envoyé à ${emailController.text}',
-                  ),
-                  backgroundColor: AppColors.primary,
-                ),
-              );
-            },
-            child: const Text('Envoyer'),
           ),
         ],
       ),

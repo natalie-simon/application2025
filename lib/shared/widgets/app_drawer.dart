@@ -164,8 +164,13 @@ class AppDrawer extends ConsumerWidget {
           ),
         ),
         
-        // Bouton déconnexion
+        // Boutons en bas
         const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.logout, color: Colors.red),
+          title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
+          onTap: () => _showLogoutDialog(context, ref),
+        ),
         ListTile(
           leading: const Icon(Icons.info_outline, color: AppColors.primary),
           title: const Text('À propos'),
@@ -173,11 +178,6 @@ class AppDrawer extends ConsumerWidget {
             Navigator.of(context).pop();
             _showAboutDialog(context);
           },
-        ),
-        ListTile(
-          leading: const Icon(Icons.logout, color: Colors.red),
-          title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
-          onTap: () => _showLogoutDialog(context, ref),
         ),
       ],
     );
@@ -287,7 +287,7 @@ class AppDrawer extends ConsumerWidget {
             SizedBox(height: 12),
             Text('Version: 0.5.0-beta'),
             SizedBox(height: 8),
-            Text('Branche: feature/fc_amelioration_inscription'),
+            Text('Branche: feature/fc_reinitialisation_mdp'),
           ],
         ),
         actions: [

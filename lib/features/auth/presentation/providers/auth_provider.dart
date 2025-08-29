@@ -309,6 +309,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Demande de réinitialisation de mot de passe
+  Future<void> forgotPassword(String email) async {
+    try {
+      AppLogger.auth('Demande de réinitialisation de mot de passe', email: email);
+      
+      await _authService.forgotPassword(email);
+      
+      AppLogger.auth('Demande de réinitialisation envoyée avec succès', email: email);
+    } catch (e) {
+      AppLogger.error('Erreur lors de la demande de réinitialisation', tag: 'AUTH_PROVIDER', error: e);
+      
+      if (e is AuthServiceException) {
+        throw e.message;
+      } else {
+        throw 'Erreur inattendue lors de la demande de réinitialisation';
+      }
+    }
+  }
+
   /// Convertit le rôle string en UserRole enum
   UserRole _parseUserRole(String? roleString) {
     switch (roleString?.toUpperCase()) {

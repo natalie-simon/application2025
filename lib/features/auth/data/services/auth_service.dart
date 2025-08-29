@@ -145,6 +145,59 @@ class AuthService {
       );
     }
   }
+
+  /// Demande de réinitialisation de mot de passe
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      AppLogger.auth('Demande de réinitialisation de mot de passe pour: $email');
+
+      final response = await _dio.post(
+        '/forgot-password',
+        data: {'email': email},
+      );
+
+      AppLogger.apiCall('POST', '/forgot-password', statusCode: response.statusCode, tag: 'AUTH');
+
+      return response.data;
+    } on DioException catch (e) {
+      AppLogger.error('Erreur DioException forgot-password: ${e.type}', tag: 'AUTH', error: e.response?.data ?? e.message);
+
+      String errorMessage = 'Erreur lors de la demande de réinitialisation';
+      int statusCode = e.response?.statusCode ?? 0;
+
+      if (e.response != null) {
+        final responseData = e.response!.data;
+        if (responseData is Map<String, dynamic>) {
+          final messageField = responseData['message'];
+          if (messageField is String) {
+            errorMessage = messageField;
+          }
+        }
+        
+        switch (statusCode) {
+          case 404:
+            errorMessage = 'Aucun compte associé à cette adresse email';
+            break;
+          case 429:
+            errorMessage = 'Trop de demandes, veuillez réessayer plus tard';
+            break;
+          case 500:
+            errorMessage = 'Erreur serveur, veuillez réessayer';
+            break;
+        }
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+                 e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = 'Délai de connexion dépassé';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'Impossible de se connecter au serveur';
+      }
+
+      throw AuthServiceException(errorMessage, statusCode);
+    } catch (e) {
+      AppLogger.error('Erreur générale forgot-password', tag: 'AUTH', error: e);
+      throw AuthServiceException('Erreur inattendue: $e', 0);
+    }
+  }
 }
 
 /// Exception personnalisée pour les erreurs d'authentification
