@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/widgets/login_form.dart';
+import '../../features/auth/presentation/widgets/register_form.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -230,6 +231,14 @@ class AppDrawer extends ConsumerWidget {
                 const SizedBox(height: 16),
                 const Divider(),
                 ListTile(
+                  leading: const Icon(Icons.person_add, color: AppColors.primary),
+                  title: const Text('Créer un compte'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showRegisterDialog(context);
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.info_outline, color: AppColors.primary),
                   title: const Text('À propos'),
                   onTap: () {
@@ -242,6 +251,23 @@ class AppDrawer extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showRegisterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Créer un compte'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: RegisterForm(
+              onCancel: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -259,9 +285,9 @@ class AppDrawer extends ConsumerWidget {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 12),
-            Text('Version: 0.4.0-beta'),
+            Text('Version: 0.5.0-beta'),
             SizedBox(height: 8),
-            Text('Branche: develop'),
+            Text('Branche: feature/fc_creation_compte_membre'),
           ],
         ),
         actions: [
