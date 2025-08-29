@@ -287,7 +287,7 @@ class AppDrawer extends ConsumerWidget {
             SizedBox(height: 12),
             Text('Version: 0.5.0-beta'),
             SizedBox(height: 8),
-            Text('Branche: feature/fc_creation_compte_membre'),
+            Text('Branche: feature/fc_amelioration_inscription'),
           ],
         ),
         actions: [

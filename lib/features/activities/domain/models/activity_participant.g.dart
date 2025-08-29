@@ -9,8 +9,8 @@ part of 'activity_participant.dart';
 MemberProfile _$MemberProfileFromJson(Map<String, dynamic> json) =>
     MemberProfile(
       id: (json['id'] as num).toInt(),
-      nom: json['nom'] as String,
-      prenom: json['prenom'] as String,
+      nom: json['nom'] as String?,
+      prenom: json['prenom'] as String?,
       telephone: json['telephone'] as String?,
       communicationMail: json['communication_mail'] as bool,
       communicationSms: json['communication_sms'] as bool,
@@ -35,7 +35,9 @@ Member _$MemberFromJson(Map<String, dynamic> json) => Member(
       email: json['email'] as String,
       isDeleted: json['est_supprime'] as bool,
       role: json['role'] as String,
-      profil: MemberProfile.fromJson(json['profil'] as Map<String, dynamic>),
+      profil: json['profil'] == null
+          ? null
+          : MemberProfile.fromJson(json['profil'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$MemberToJson(Member instance) => <String, dynamic>{

@@ -6,8 +6,8 @@ part 'activity_participant.g.dart';
 @JsonSerializable()
 class MemberProfile extends Equatable {
   final int id;
-  final String nom;
-  final String prenom;
+  final String? nom;
+  final String? prenom;
   final String? telephone;
   @JsonKey(name: 'communication_mail')
   final bool communicationMail;
@@ -18,8 +18,8 @@ class MemberProfile extends Equatable {
 
   const MemberProfile({
     required this.id,
-    required this.nom,
-    required this.prenom,
+    this.nom,
+    this.prenom,
     this.telephone,
     required this.communicationMail,
     required this.communicationSms,
@@ -33,7 +33,9 @@ class MemberProfile extends Equatable {
   Map<String, dynamic> toJson() => _$MemberProfileToJson(this);
 
   String get displayName {
-    final fullName = '$prenom $nom'.trim();
+    final prenomStr = prenom ?? '';
+    final nomStr = nom ?? '';
+    final fullName = '$prenomStr $nomStr'.trim();
     return fullName.isNotEmpty ? fullName : '';
   }
 
@@ -57,14 +59,14 @@ class Member extends Equatable {
   @JsonKey(name: 'est_supprime')
   final bool isDeleted;
   final String role;
-  final MemberProfile profil;
+  final MemberProfile? profil;
 
   const Member({
     required this.id,
     required this.email,
     required this.isDeleted,
     required this.role,
-    required this.profil,
+    this.profil,
   });
 
   factory Member.fromJson(Map<String, dynamic> json) => _$MemberFromJson(json);

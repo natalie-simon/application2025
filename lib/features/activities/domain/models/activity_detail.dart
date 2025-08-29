@@ -21,7 +21,7 @@ class ActivityDetail extends Equatable {
   @JsonKey(name: 'nbr_attente')
   final int waitingListCount;
   @JsonKey(name: 'date_heure_limite_inscription')
-  final DateTime registrationDeadline;
+  final DateTime? registrationDeadline;
   final int categorieId;
   final ActivityCategory categorie;
   final List<ActivityParticipant> participants;
@@ -35,7 +35,7 @@ class ActivityDetail extends Equatable {
     this.cancellationReason,
     required this.maxParticipants,
     required this.waitingListCount,
-    required this.registrationDeadline,
+    this.registrationDeadline,
     required this.categorieId,
     required this.categorie,
     required this.participants,
@@ -69,7 +69,12 @@ class ActivityDetail extends Equatable {
 
   bool get isFull => availableSpots <= 0;
 
-  bool get isRegistrationOpen => DateTime.now().isBefore(registrationDeadline);
+  /// Date limite d'inscription effective (avec fallback sur startDateTime - 3h)
+  DateTime get effectiveRegistrationDeadline {
+    return registrationDeadline ?? startDateTime.subtract(const Duration(hours: 3));
+  }
+
+  bool get isRegistrationOpen => DateTime.now().isBefore(effectiveRegistrationDeadline);
 
   bool get isCancelled => cancellationReason != null;
 
