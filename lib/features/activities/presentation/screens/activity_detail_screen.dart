@@ -37,7 +37,7 @@ class ActivityDetailNotifier extends StateNotifier<AsyncValue<ActivityDetail>> {
     if (_token == null) return;
 
     try {
-      await _activitiesService.registerForActivity(_activityId, observations: observations, token: _token!);
+      await _activitiesService.registerForActivity(_activityId, observations: observations, token: _token);
       await _loadActivityDetail(); // Recharger les données
     } catch (error) {
       AppLogger.error('Erreur inscription', error: error, tag: 'ACTIVITY_DETAIL');
@@ -49,7 +49,7 @@ class ActivityDetailNotifier extends StateNotifier<AsyncValue<ActivityDetail>> {
     if (_token == null) return;
 
     try {
-      await _activitiesService.unregisterFromActivity(_activityId, token: _token!);
+      await _activitiesService.unregisterFromActivity(_activityId, token: _token);
       await _loadActivityDetail(); // Recharger les données
     } catch (error) {
       AppLogger.error('Erreur désinscription', error: error, tag: 'ACTIVITY_DETAIL');
@@ -115,7 +115,7 @@ class ActivityDetailScreen extends ConsumerWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [categoryColor.withOpacity(0.1), categoryColor.withOpacity(0.05)],
+                colors: [categoryColor.withValues(alpha: 0.1), categoryColor.withValues(alpha: 0.05)],
               ),
             ),
             child: Column(
@@ -255,7 +255,7 @@ class ActivityDetailScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -274,7 +274,7 @@ class ActivityDetailScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -310,7 +310,7 @@ class ActivityDetailScreen extends ConsumerWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   child: Text(
                     _getParticipantInitial(participant.membre),
                     style: TextStyle(
@@ -346,7 +346,7 @@ class ActivityDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -379,9 +379,9 @@ class ActivityDetailScreen extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
+          color: Colors.orange.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -402,9 +402,9 @@ class ActivityDetailScreen extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
+          color: Colors.red.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red.withOpacity(0.3)),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -425,9 +425,9 @@ class ActivityDetailScreen extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
+          color: Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -570,7 +570,7 @@ class ActivityDetailScreen extends ConsumerWidget {
                 const Text('Gilet stabilisateur :'),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedVest,
+                  initialValue: selectedVest,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -631,9 +631,9 @@ class ActivityDetailScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
