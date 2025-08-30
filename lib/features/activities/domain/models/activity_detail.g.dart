@@ -20,8 +20,9 @@ ActivityDetail _$ActivityDetailFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['date_heure_limite_inscription'] as String),
       categorieId: (json['categorieId'] as num).toInt(),
-      categorie:
-          ActivityCategory.fromJson(json['categorie'] as Map<String, dynamic>),
+      categorie: ActivityCategory.fromJson(
+        json['categorie'] as Map<String, dynamic>,
+      ),
       participants: (json['participants'] as List<dynamic>)
           .map((e) => ActivityParticipant.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -37,8 +38,8 @@ Map<String, dynamic> _$ActivityDetailToJson(ActivityDetail instance) =>
       'motif_annulation': instance.cancellationReason,
       'max_participant': instance.maxParticipants,
       'nbr_attente': instance.waitingListCount,
-      'date_heure_limite_inscription':
-          instance.registrationDeadline?.toIso8601String(),
+      'date_heure_limite_inscription': instance.registrationDeadline
+          ?.toIso8601String(),
       'categorieId': instance.categorieId,
       'categorie': instance.categorie,
       'participants': instance.participants,

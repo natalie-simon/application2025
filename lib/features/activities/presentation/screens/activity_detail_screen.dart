@@ -501,8 +501,6 @@ class ActivityDetailScreen extends ConsumerWidget {
   }
 
   void _showSimpleRegisterDialog(BuildContext context, WidgetRef ref, ActivityDetail activity) {
-    final observationsController = TextEditingController();
-    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -511,16 +509,6 @@ class ActivityDetailScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Vous voulez vous inscrire à "${activity.titre}" ?'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: observationsController,
-              decoration: const InputDecoration(
-                labelText: 'Observations (optionnel)',
-                hintText: 'Remarques particulières...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
           ],
         ),
         actions: [
@@ -533,7 +521,7 @@ class ActivityDetailScreen extends ConsumerWidget {
               Navigator.of(context).pop();
               try {
                 await ref.read(activityDetailProvider(activity.id).notifier)
-                    .registerForActivity(observations: observationsController.text);
+                    .registerForActivity();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Inscription réussie !')),
@@ -559,7 +547,6 @@ class ActivityDetailScreen extends ConsumerWidget {
     bool needsTank = false;
     bool needsRegulator = false;
     bool needsNitrox = false;
-    final observationsController = TextEditingController();
     
     final vestOptions = ['Aucun', 'Junior', 'XXS', 'XS', 'S', 'M', 'L', 'XL'];
 
@@ -639,19 +626,6 @@ class ActivityDetailScreen extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                 ),
                 
-                const SizedBox(height: 16),
-                
-                // Champ observations
-                TextField(
-                  controller: observationsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Observations supplémentaires (optionnel)',
-                    hintText: 'Autres remarques...',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 2,
-                ),
-                
                 if (needsNitrox) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -698,9 +672,6 @@ class ActivityDetailScreen extends ConsumerWidget {
                 equipmentObservations.add('Nitrox: ${needsNitrox ? 'oui' : 'non'}');
                 
                 String finalObservations = equipmentObservations.join(' / ');
-                if (observationsController.text.isNotEmpty) {
-                  finalObservations += ' / ${observationsController.text}';
-                }
                 
                 try {
                   await ref.read(activityDetailProvider(activity.id).notifier)

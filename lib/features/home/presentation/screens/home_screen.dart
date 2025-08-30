@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/app_drawer.dart';
 import '../../../../shared/widgets/article_carousel.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../articles/presentation/providers/articles_provider.dart';
+import '../../../profile/presentation/providers/profile_check_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -18,6 +20,14 @@ class HomeScreen extends ConsumerWidget {
     
     // Charger les articles au démarrage
     final articlesState = ref.watch(articlesProvider);
+    
+    // Vérification du profil lors de la connexion
+    ref.listen<AuthState>(authProvider, (previous, current) {
+      if (previous?.isAuthenticated != true && current.isAuthenticated) {
+        AppLogger.info('Nouvelle connexion détectée, vérification du profil', tag: 'HOME_SCREEN');
+        ProfileCheckService.checkProfileAfterLogin(context, ref);
+      }
+    });
     
     // Charger les articles si pas encore fait
     WidgetsBinding.instance.addPostFrameCallback((_) {
