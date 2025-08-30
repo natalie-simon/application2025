@@ -9,17 +9,26 @@ class ActivitiesService {
 
   ActivitiesService() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api-prod.lesbulleurstoulonnais.fr/api',
-      connectTimeout: EnvConfig.connectTimeout,
-      receiveTimeout: EnvConfig.receiveTimeout,
+      baseUrl: EnvConfig.activitiesBaseUrl,
+      connectTimeout: EnvConfig.connectionTimeout,
+      receiveTimeout: EnvConfig.apiTimeout,
+      headers: EnvConfig.defaultHeaders,
     ));
 
-    if (EnvConfig.enableLogging) {
+    // Logging conditionnel basé sur la configuration d'environnement
+    if (EnvConfig.enableApiLogging) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: true,
         responseBody: true,
+        requestHeader: true,
+        responseHeader: false,
         logPrint: (obj) => AppLogger.debug(obj.toString(), tag: 'ACTIVITIES_API'),
       ));
+    }
+
+    // Log de la configuration au démarrage (debug uniquement)
+    if (EnvConfig.enableAppLogging) {
+      AppLogger.info('ActivitiesService configuré pour: ${EnvConfig.environmentName}', tag: 'ACTIVITIES_SERVICE');
     }
   }
 

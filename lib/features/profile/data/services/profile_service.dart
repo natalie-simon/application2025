@@ -8,7 +8,7 @@ import '../../../../core/utils/logger.dart';
 import '../../domain/models/profile.dart';
 
 class ProfileService {
-  static String get baseUrl => '${EnvConfig.apiBaseUrl}/profile';
+  static String get baseUrl => EnvConfig.profileBaseUrl;
 
   /// Récupérer le profil de l'utilisateur connecté
   Future<Profile?> getCurrentProfile(String token) async {
@@ -18,10 +18,10 @@ class ProfileService {
       final response = await http.get(
         Uri.parse('$baseUrl/me'),
         headers: {
+          ...EnvConfig.defaultHeaders,
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
         },
-      );
+      ).timeout(EnvConfig.apiTimeout);
 
       AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
 
@@ -67,9 +67,11 @@ class ProfileService {
 
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('${EnvConfig.apiBaseUrl}/profils/create'),
+        Uri.parse('$baseUrl/create'),
       );
 
+      // Ajouter tous les headers par défaut + authentification
+      request.headers.addAll(EnvConfig.defaultHeaders);
       request.headers['Authorization'] = 'Bearer $token';
 
       // Ajouter les champs texte
@@ -140,6 +142,8 @@ class ProfileService {
         Uri.parse('$baseUrl/avatar'),
       );
 
+      // Ajouter tous les headers par défaut + authentification
+      request.headers.addAll(EnvConfig.defaultHeaders);
       request.headers['Authorization'] = 'Bearer $token';
 
       // Détection du type MIME

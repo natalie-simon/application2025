@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import '../../../../core/config/env_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../domain/models/auth_response_v2.dart';
 import '../../domain/models/login_request.dart';
@@ -9,15 +9,14 @@ class AuthService {
 
   AuthService() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api-prod.lesbulleurstoulonnais.fr/api/auth',
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      baseUrl: EnvConfig.authBaseUrl,
+      connectTimeout: EnvConfig.connectionTimeout,
+      receiveTimeout: EnvConfig.apiTimeout,
+      headers: EnvConfig.defaultHeaders,
     ));
 
-    if (kDebugMode) {
+    // Logging conditionnel basé sur la configuration d'environnement
+    if (EnvConfig.enableApiLogging) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: true,
         responseBody: true,
@@ -25,6 +24,12 @@ class AuthService {
         responseHeader: false,
         logPrint: (obj) => AppLogger.debug(obj.toString(), tag: 'AUTH_API'),
       ));
+    }
+
+    // Log de la configuration au démarrage (debug uniquement)
+    if (EnvConfig.enableAppLogging) {
+      AppLogger.info('AuthService configuré pour: ${EnvConfig.environmentName}', tag: 'AUTH_SERVICE');
+      AppLogger.debug('Configuration: ${EnvConfig.debugInfo}', tag: 'AUTH_SERVICE');
     }
   }
 
