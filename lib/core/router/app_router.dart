@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/articles/presentation/screens/article_detail_screen.dart';
 import '../../features/activities/presentation/screens/activities_screen.dart';
+import '../../features/profile/presentation/screens/profile_edit_screen.dart';
 
 /// Configuration des routes de l'application
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -37,18 +38,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ActivitiesScreen(),
       ),
       
+      // Route de modification du profil
+      GoRoute(
+        path: '/profile/edit',
+        name: 'profile-edit',
+        builder: (context, state) {
+          final isInitialSetup = state.uri.queryParameters['setup'] == 'true';
+          return ProfileEditScreen(isInitialSetup: isInitialSetup);
+        },
+      ),
+      
       // Routes futures (commentées pour l'instant)
       /*
       GoRoute(
         path: '/members',
         name: 'members',
         builder: (context, state) => const MembersListScreen(),
-      ),
-      
-      GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
       ),
       */
     ],
@@ -105,4 +110,13 @@ extension AppRouterExtension on GoRouter {
   
   /// Navigation vers les activités
   void goToActivities() => go('/activities');
+  
+  /// Navigation vers l'édition du profil
+  void goToProfileEdit({bool isInitialSetup = false}) {
+    if (isInitialSetup) {
+      go('/profile/edit?setup=true');
+    } else {
+      go('/profile/edit');
+    }
+  }
 }

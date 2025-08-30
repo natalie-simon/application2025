@@ -24,5 +24,10 @@ Pour les prochaines versions, considérer :
 - Lecture automatique de la version depuis `pubspec.yaml`
 - Affichage de la date de build
 
+## Logging
+- Logger dans le fichier worklog du jour ce qui doit l'être au fur et à mesure
+- Logger dans le fichier work du jour à chaque fois que l'utilisateur dit qu'il valide
+
 ---
 *Consignes établies le 27 août 2025*
+*Dernière mise à jour le 30 août 2025*

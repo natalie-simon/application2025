@@ -84,7 +84,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
       _isLoading = true;
     });
 
-    final currentContext = context;
     
     try {
       // Appel à l'API d'inscription
@@ -121,7 +120,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
         
         // Afficher message de succès
         if (mounted) {
-          ScaffoldMessenger.of(currentContext).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Compte créé avec succès ! Vous êtes maintenant connecté.'),
               backgroundColor: AppColors.success,

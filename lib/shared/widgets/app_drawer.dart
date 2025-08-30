@@ -285,9 +285,9 @@ class AppDrawer extends ConsumerWidget {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 12),
-            Text('Version: 0.6.0-beta'),
+            Text('Version: 0.7.0-beta'),
             SizedBox(height: 8),
-            Text('Branche: develop'),
+            Text('Branche: feature/fc_profil'),
           ],
         ),
         actions: [

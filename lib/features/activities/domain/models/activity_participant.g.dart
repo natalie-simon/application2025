@@ -31,22 +31,22 @@ Map<String, dynamic> _$MemberProfileToJson(MemberProfile instance) =>
     };
 
 Member _$MemberFromJson(Map<String, dynamic> json) => Member(
-      id: (json['id'] as num).toInt(),
-      email: json['email'] as String,
-      isDeleted: json['est_supprime'] as bool,
-      role: json['role'] as String,
-      profil: json['profil'] == null
-          ? null
-          : MemberProfile.fromJson(json['profil'] as Map<String, dynamic>),
-    );
+  id: (json['id'] as num).toInt(),
+  email: json['email'] as String,
+  isDeleted: json['est_supprime'] as bool,
+  role: json['role'] as String,
+  profil: json['profil'] == null
+      ? null
+      : MemberProfile.fromJson(json['profil'] as Map<String, dynamic>),
+);
 
 Map<String, dynamic> _$MemberToJson(Member instance) => <String, dynamic>{
-      'id': instance.id,
-      'email': instance.email,
-      'est_supprime': instance.isDeleted,
-      'role': instance.role,
-      'profil': instance.profil,
-    };
+  'id': instance.id,
+  'email': instance.email,
+  'est_supprime': instance.isDeleted,
+  'role': instance.role,
+  'profil': instance.profil,
+};
 
 ActivityParticipant _$ActivityParticipantFromJson(Map<String, dynamic> json) =>
     ActivityParticipant(
@@ -59,12 +59,12 @@ ActivityParticipant _$ActivityParticipantFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$ActivityParticipantToJson(
-        ActivityParticipant instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'observations': instance.observations,
-      'dateInscription': instance.registrationDate.toIso8601String(),
-      'membreId': instance.membreId,
-      'activiteId': instance.activiteId,
-      'membre': instance.membre,
-    };
+  ActivityParticipant instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'observations': instance.observations,
+  'dateInscription': instance.registrationDate.toIso8601String(),
+  'membreId': instance.membreId,
+  'activiteId': instance.activiteId,
+  'membre': instance.membre,
+};
