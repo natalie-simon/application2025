@@ -2,7 +2,7 @@ name: assbt
 description: Association Sportive Sub-Aquatique des Bulleurs Toulonnais
 publish_to: 'none'
 
-version: 0.6.0-beta+1
+version: 0.7.0-beta+1
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
