@@ -25,10 +25,22 @@ class ProfileCheckService {
       AppLogger.info('Vérification du profil après connexion', tag: 'PROFILE_CHECK');
 
       try {
-        // Vérification immédiate sans JWT profil dans le token
-        final profileState = ref.read(profileProvider);
+        // Attendre que le profil soit chargé (avec timeout)
+        int attempts = 0;
+        const maxAttempts = 20; // 2 secondes max
+        const delayMs = 100;
         
-        // Si pas de profil chargé, considérer comme incomplet
+        ProfileState profileState;
+        do {
+          profileState = ref.read(profileProvider);
+          if (profileState.profile != null || !profileState.isLoading) {
+            break;
+          }
+          await Future.delayed(const Duration(milliseconds: delayMs));
+          attempts++;
+        } while (attempts < maxAttempts);
+        
+        // Si pas de profil chargé après le timeout, considérer comme incomplet
         bool isIncomplete = profileState.profile == null;
         
         // Si nous avons un profil, vérifier s'il est complet
@@ -36,7 +48,7 @@ class ProfileCheckService {
           isIncomplete = profileState.profile!.isEmpty || !profileState.profile!.isComplete;
         }
 
-        AppLogger.debug('État du profil: incomplete=$isIncomplete, profil=${profileState.profile != null}', tag: 'PROFILE_CHECK');
+        AppLogger.debug('État du profil: incomplete=$isIncomplete, profil=${profileState.profile != null}, attempts=$attempts', tag: 'PROFILE_CHECK');
 
         if (isIncomplete) {
           AppLogger.info('Profil incomplet détecté, redirection vers l\'écran de configuration', tag: 'PROFILE_CHECK');
@@ -46,7 +58,12 @@ class ProfileCheckService {
             context.pushReplacement('/profile/edit?setup=true');
           }
         } else {
-          AppLogger.info('Profil complet, aucune action requise', tag: 'PROFILE_CHECK');
+          AppLogger.info('Profil complet, redirection vers les activités', tag: 'PROFILE_CHECK');
+          
+          if (context.mounted) {
+            // Rediriger vers l'agenda des activités si le profil est complet
+            context.pushReplacement('/activities');
+          }
         }
       } catch (e) {
         AppLogger.error('Erreur lors de la vérification du profil', error: e, tag: 'PROFILE_CHECK');

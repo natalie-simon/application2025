@@ -24,12 +24,12 @@ class RegistrationService {
       };
 
       AppLogger.debug('[REGISTRATION_API] *** Request ***');
-      AppLogger.debug('[REGISTRATION_API] uri: ${EnvConfig.apiBaseUrl}/membres/register');
+      AppLogger.debug('[REGISTRATION_API] uri: ${EnvConfig.membersBaseUrl}/register');
       AppLogger.debug('[REGISTRATION_API] method: POST');
       AppLogger.debug('[REGISTRATION_API] data: $data');
       
       final response = await _dio.post(
-        '${EnvConfig.apiBaseUrl}/membres/register',
+        '${EnvConfig.membersBaseUrl}/register',
         data: data,
         options: Options(
           headers: {

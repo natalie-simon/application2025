@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 import '../../../../core/config/env_config.dart';
@@ -10,45 +11,45 @@ import '../../domain/models/profile.dart';
 class ProfileService {
   static String get baseUrl => EnvConfig.profileBaseUrl;
 
-  /// Récupérer le profil de l'utilisateur connecté
+  /// Récupérer le profil de l'utilisateur connecté depuis le JWT
   Future<Profile?> getCurrentProfile(String token) async {
     try {
-      AppLogger.info('Récupération du profil utilisateur', tag: 'PROFILE_SERVICE');
+      AppLogger.info('Récupération du profil utilisateur depuis le JWT', tag: 'PROFILE_SERVICE');
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/me'),
-        headers: {
-          ...EnvConfig.defaultHeaders,
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(EnvConfig.apiTimeout);
-
-      AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        final profileData = responseData['data'] ?? responseData;
-        
-        if (profileData == null) {
-          AppLogger.info('Aucun profil trouvé', tag: 'PROFILE_SERVICE');
-          return null;
-        }
-
-        AppLogger.info('Profil récupéré avec succès', tag: 'PROFILE_SERVICE');
-        return Profile.fromJson(profileData);
-      } else if (response.statusCode == 404) {
-        AppLogger.info('Profil non trouvé (404)', tag: 'PROFILE_SERVICE');
+      // Décoder le JWT pour extraire les données de profil
+      final Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      
+      if (decodedToken['profil'] == null) {
+        AppLogger.info('Aucun profil trouvé dans le JWT', tag: 'PROFILE_SERVICE');
         return null;
-      } else {
-        AppLogger.error('Erreur lors de la récupération du profil: ${response.statusCode}', tag: 'PROFILE_SERVICE');
-        throw ProfileServiceException('Erreur lors de la récupération du profil: ${response.statusCode}');
       }
+
+      final profil = decodedToken['profil'] as Map<String, dynamic>;
+      final userId = (decodedToken['sub'] as num?)?.toInt() ?? 0;
+      
+      AppLogger.debug('Données JWT profil: $profil', tag: 'PROFILE_SERVICE');
+      
+      // Construire un objet Profile à partir des données JWT
+      final profileData = {
+        'id': profil['id'] ?? 0,
+        'nom': profil['nom'],
+        'prenom': profil['prenom'], 
+        'telephone': profil['telephone'],
+        'communication_mail': profil['communication_mail'] ?? true,
+        'communication_sms': profil['communication_sms'] ?? false,
+        'avatarId': profil['avatarId'],
+        'membreId': userId,
+      };
+
+      AppLogger.debug('ProfileData construit: $profileData', tag: 'PROFILE_SERVICE');
+      AppLogger.info('Profil récupéré depuis JWT avec succès', tag: 'PROFILE_SERVICE');
+      return Profile.fromJson(profileData);
     } catch (e) {
-      AppLogger.error('Exception lors de la récupération du profil', error: e, tag: 'PROFILE_SERVICE');
+      AppLogger.error('Exception lors de la récupération du profil depuis JWT', error: e, tag: 'PROFILE_SERVICE');
       if (e is ProfileServiceException) {
         rethrow;
       }
-      throw ProfileServiceException('Erreur de connexion lors de la récupération du profil');
+      throw ProfileServiceException('Erreur lors du décodage du profil JWT');
     }
   }
 

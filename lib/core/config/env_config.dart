@@ -90,7 +90,7 @@ class EnvConfig {
   static String get articlesBaseUrl => '$apiBaseUrl/api/articles';
 
   /// URL complète pour l'API des membres
-  static String get membersBaseUrl => '$apiBaseUrl/api/members';
+  static String get membersBaseUrl => '$apiBaseUrl/api/membres';
 
   // === MÉTHODES UTILITAIRES ===
 
