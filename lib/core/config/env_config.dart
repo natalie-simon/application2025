@@ -84,7 +84,7 @@ class EnvConfig {
   static String get profileBaseUrl => '$apiBaseUrl/api/profils';
 
   /// URL complète pour l'API des activités
-  static String get activitiesBaseUrl => '$apiBaseUrl/api/activities';
+  static String get activitiesBaseUrl => '$apiBaseUrl/api';
 
   /// URL complète pour l'API des articles
   static String get articlesBaseUrl => '$apiBaseUrl/api/articles';
