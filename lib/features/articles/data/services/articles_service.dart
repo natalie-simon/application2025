@@ -113,9 +113,9 @@ class ArticlesService {
     }
   }
 
-  /// Charge les articles pour la page d'accueil (catégorie 'visiteurs' pour la landing page)
+  /// Charge les articles pour la page d'accueil (catégorie 'accueil' pour la landing page)
   Future<List<Article>> getHomeArticles() {
-    return getArticlesByCategorie('visiteurs', page: 1, limit: 6);
+    return getArticlesByCategorie('accueil', page: 1, limit: 6);
   }
 
   /// Charge les articles d'informations

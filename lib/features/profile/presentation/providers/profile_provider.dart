@@ -152,6 +152,41 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     }
   }
 
+  /// Supprimer l'avatar
+  Future<void> deleteAvatar() async {
+    final authState = _ref.read(authProvider);
+    if (authState.token == null) {
+      throw Exception('Token d\'authentification manquant');
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      AppLogger.info('Suppression de l\'avatar', tag: 'PROFILE_PROVIDER');
+
+      final updatedProfile = await _profileService.deleteAvatar(
+        token: authState.token!,
+      );
+
+      state = state.copyWith(
+        profile: updatedProfile,
+        isLoading: false,
+        error: null,
+      );
+
+      AppLogger.info('Avatar supprimé avec succès', tag: 'PROFILE_PROVIDER');
+    } catch (e) {
+      AppLogger.error('Erreur lors de la suppression de l\'avatar', error: e, tag: 'PROFILE_PROVIDER');
+      
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      
+      rethrow;
+    }
+  }
+
   /// Rafraîchir le profil
   Future<void> refresh() async {
     await _loadCurrentProfile();

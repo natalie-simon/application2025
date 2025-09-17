@@ -68,7 +68,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     if (value == null || value.trim().isEmpty) {
       return 'Le téléphone est requis';
     }
+    
     return null;
+  }
+
+  bool _hasExistingAvatar() {
+    final profile = ref.read(profileProvider).profile;
+    return profile?.avatarId != null;
   }
 
   Future<void> _pickImage() async {
@@ -114,15 +120,41 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   }
                 },
               ),
-              if (_selectedImage != null)
+              if (_selectedImage != null || _hasExistingAvatar())
                 ListTile(
                   leading: const Icon(Icons.delete),
-                  title: const Text('Supprimer'),
-                  onTap: () {
+                  title: const Text('Supprimer la photo'),
+                  onTap: () async {
                     Navigator.pop(context);
-                    setState(() {
-                      _selectedImage = null;
-                    });
+                    
+                    if (_selectedImage != null) {
+                      // Supprimer l'image sélectionnée localement
+                      setState(() {
+                        _selectedImage = null;
+                      });
+                    } else if (_hasExistingAvatar()) {
+                      // Supprimer l'avatar existant sur le serveur
+                      try {
+                        await ref.read(profileProvider.notifier).deleteAvatar();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Avatar supprimé avec succès !'),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Erreur lors de la suppression : $e'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    }
                   },
                 ),
             ],
@@ -156,12 +188,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           ),
         );
 
-        // Si c'est la configuration initiale, aller à la page agenda
-        if (widget.isInitialSetup) {
-          context.go('/activities');
-        } else {
-          Navigator.of(context).pop();
-        }
+        // Toujours rediriger vers les activités après la sauvegarde
+        context.go('/activities');
       }
     } catch (e) {
       if (mounted) {
@@ -244,33 +272,93 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       border: Border.all(color: AppColors.primary, width: 2),
                     ),
                     child: _selectedImage != null
-                        ? ClipOval(
-                            child: Image.file(
-                              _selectedImage!,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        ? Stack(
                             children: [
-                              Icon(
-                                Icons.add_a_photo,
-                                size: 32,
-                                color: AppColors.primary,
+                              ClipOval(
+                                child: Image.file(
+                                  _selectedImage!,
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Ajouter\nune photo',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w500,
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedImage = null;
+                                      });
+                                    },
+                                    padding: const EdgeInsets.all(4),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 24,
+                                      minHeight: 24,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
-                          ),
+                          )
+                        : _hasExistingAvatar()
+                            ? Stack(
+                                children: [
+                                  ClipOval(
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 8,
+                                    right: 8,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 2),
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_a_photo,
+                                    size: 32,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Ajouter\nune photo',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                   ),
                 ),
               ),
@@ -310,12 +398,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               // Téléphone
               TextFormField(
                 controller: _telephoneController,
-                keyboardType: TextInputType.text,
+                keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.done,
                 validator: _validatePhone,
                 decoration: const InputDecoration(
                   labelText: 'Téléphone *',
-                  hintText: 'Numéro de téléphone',
+                  hintText: 'Votre numéro de téléphone',
                   prefixIcon: Icon(Icons.phone_outlined),
                   border: OutlineInputBorder(),
                 ),
@@ -374,7 +462,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   if (!widget.isInitialSetup) ...[
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: profileState.isLoading ? null : () => Navigator.pop(context),
+                        onPressed: profileState.isLoading ? null : () => context.go('/activities'),
                         child: const Text('Annuler'),
                       ),
                     ),

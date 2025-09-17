@@ -2,7 +2,7 @@ name: assbt
 description: Association Sportive Sub-Aquatique des Bulleurs Toulonnais
 publish_to: 'none'
 
-version: 0.7.0-beta+1
+version: 0.7.3+1
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -32,6 +32,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
   image_picker: ^1.0.4
+  flutter_html: ^3.0.0-beta.2
   
   # Calendar (équivalent FullCalendar)
   table_calendar: ^3.0.9

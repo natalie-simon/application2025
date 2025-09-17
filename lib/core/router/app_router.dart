@@ -5,6 +5,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/articles/presentation/screens/article_detail_screen.dart';
 import '../../features/activities/presentation/screens/activities_screen.dart';
 import '../../features/profile/presentation/screens/profile_edit_screen.dart';
+import '../../features/profile/presentation/screens/profile_view_screen.dart';
 
 /// Configuration des routes de l'application
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -36,6 +37,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/activities',
         name: 'activities',
         builder: (context, state) => const ActivitiesScreen(),
+      ),
+      
+      // Route de visualisation du profil
+      GoRoute(
+        path: '/profile',
+        name: 'profile-view',
+        builder: (context, state) => const ProfileViewScreen(),
       ),
       
       // Route de modification du profil
@@ -110,6 +118,9 @@ extension AppRouterExtension on GoRouter {
   
   /// Navigation vers les activités
   void goToActivities() => go('/activities');
+  
+  /// Navigation vers la visualisation du profil
+  void goToProfile() => go('/profile');
   
   /// Navigation vers l'édition du profil
   void goToProfileEdit({bool isInitialSetup = false}) {

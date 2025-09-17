@@ -9,32 +9,42 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../articles/presentation/providers/articles_provider.dart';
 import '../../../profile/presentation/providers/profile_check_provider.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _hasCheckedProfile = false;
+  bool _hasLoadedArticles = false;
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
     final isAuthenticated = authState.isAuthenticated;
-    
+
     // Charger les articles au démarrage
     final articlesState = ref.watch(articlesProvider);
-    
-    // Vérification du profil lors de la connexion
+
+    // Vérification du profil lors de la connexion (une seule fois)
     ref.listen<AuthState>(authProvider, (previous, current) {
-      if (previous?.isAuthenticated != true && current.isAuthenticated) {
+      if (previous?.isAuthenticated != true && current.isAuthenticated && !_hasCheckedProfile) {
+        _hasCheckedProfile = true;
         AppLogger.info('Nouvelle connexion détectée, vérification du profil', tag: 'HOME_SCREEN');
         ProfileCheckService.checkProfileAfterLogin(context, ref);
       }
     });
-    
-    // Charger les articles si pas encore fait
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (articlesState.articles.isEmpty && !articlesState.isLoading && articlesState.error == null) {
+
+    // Charger les articles si pas encore fait (une seule fois)
+    if (!_hasLoadedArticles && articlesState.articles.isEmpty && !articlesState.isLoading && articlesState.error == null) {
+      _hasLoadedArticles = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(articlesProvider.notifier).loadHomeArticles();
-      }
-    });
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -275,5 +285,4 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-
 }

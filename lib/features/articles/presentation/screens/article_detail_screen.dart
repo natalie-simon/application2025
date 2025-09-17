@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/logger.dart';
@@ -26,12 +27,18 @@ class ArticleDetailScreen extends ConsumerWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         actions: [
+          // Bouton retour à l'accueil
+          IconButton(
+            onPressed: () => context.go('/'),
+            icon: const Icon(Icons.home),
+            tooltip: 'Retour à l\'accueil',
+          ),
           if (navigation.totalArticles > 1) ...[
             Text(
               '${navigation.currentIndex + 1}/${navigation.totalArticles}',
               style: const TextStyle(fontSize: 14),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
           ],
         ],
       ),
@@ -132,60 +139,42 @@ class ArticleDetailScreen extends ConsumerWidget {
             ),
           ),
           
-          const SizedBox(height: 8),
-          
-          // Métadonnées
-          Row(
-            children: [
-              Icon(
-                Icons.person,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                article.redacteur?.email ?? 'Auteur inconnu',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Icon(
-                Icons.category,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                article.categorie.toString().split('.').last.toUpperCase(),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          
           const SizedBox(height: 24),
           
-          // Contenu
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: AppColors.grey300,
-                width: 1,
+          // Contenu HTML
+          Html(
+            data: article.contenu,
+            style: {
+              "body": Style(
+                fontSize: FontSize(16),
+                lineHeight: const LineHeight(1.6),
+                color: AppColors.textPrimary,
+                margin: Margins.zero,
+                padding: HtmlPaddings.zero,
               ),
-            ),
-            child: Text(
-              // Nettoyer le HTML basique pour l'affichage
-              article.contenu.replaceAll(RegExp(r'<[^>]*>'), ''),
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.6,
+              "h1": Style(
+                fontSize: FontSize(24),
+                fontWeight: FontWeight.bold,
+                margin: Margins.only(bottom: 16),
               ),
-            ),
+              "h2": Style(
+                fontSize: FontSize(20),
+                fontWeight: FontWeight.bold,
+                margin: Margins.only(bottom: 12),
+              ),
+              "h3": Style(
+                fontSize: FontSize(18),
+                fontWeight: FontWeight.bold,
+                margin: Margins.only(bottom: 10),
+              ),
+              "p": Style(
+                margin: Margins.only(bottom: 12),
+              ),
+              "undefined": Style(
+                fontWeight: FontWeight.bold,
+                margin: Margins.only(bottom: 8),
+              ),
+            },
           ),
         ],
       ),

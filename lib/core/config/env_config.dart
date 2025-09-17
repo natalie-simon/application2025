@@ -133,7 +133,7 @@ class EnvConfig {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-API-Version': apiVersion,
-        'X-Client-Version': '0.7.0-beta',
+        'X-Client-Version': '0.7.2',
         'X-Environment': environmentName,
       };
 

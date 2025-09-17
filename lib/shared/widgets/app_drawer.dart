@@ -155,9 +155,7 @@ class AppDrawer extends ConsumerWidget {
                 title: const Text('Mon Profil'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Profil - À implémenter')),
-                  );
+                  context.go('/profile');
                 },
               ),
             ],
@@ -285,9 +283,9 @@ class AppDrawer extends ConsumerWidget {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 12),
-            Text('Version: 0.7.0-beta+1'),
+            Text('Version: 0.7.3+1'),
             SizedBox(height: 8),
-            Text('Branche: develop'),
+            Text('Branche: feature/fc_modification_profil'),
           ],
         ),
         actions: [
