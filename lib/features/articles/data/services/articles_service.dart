@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/models/article.dart';
 
 class ArticlesService {
@@ -8,17 +8,26 @@ class ArticlesService {
 
   ArticlesService() {
     _dio = Dio(BaseOptions(
-      baseUrl: EnvConfig.articlesUrl,
-      connectTimeout: EnvConfig.connectTimeout,
-      receiveTimeout: EnvConfig.receiveTimeout,
+      baseUrl: EnvConfig.articlesBaseUrl,
+      connectTimeout: EnvConfig.connectionTimeout,
+      receiveTimeout: EnvConfig.apiTimeout,
+      headers: EnvConfig.defaultHeaders,
     ));
 
-    if (EnvConfig.enableLogging) {
+    // Logging conditionnel basé sur la configuration d'environnement
+    if (EnvConfig.enableApiLogging) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: true,
         responseBody: true,
-        logPrint: (obj) => debugPrint('🌐 API: $obj'),
+        requestHeader: true,
+        responseHeader: false,
+        logPrint: (obj) => AppLogger.debug(obj.toString(), tag: 'ARTICLES_API'),
       ));
+    }
+
+    // Log de la configuration au démarrage (debug uniquement)
+    if (EnvConfig.enableAppLogging) {
+      AppLogger.info('ArticlesService configuré pour: ${EnvConfig.environmentName}', tag: 'ARTICLES_SERVICE');
     }
   }
 
@@ -29,9 +38,7 @@ class ArticlesService {
     int limit = 9,
   }) async {
     try {
-      if (EnvConfig.enableLogging) {
-        debugPrint('🔄 Chargement des articles catégorie: $categorie (page: $page, limit: $limit)');
-      }
+      AppLogger.info('Chargement des articles catégorie: $categorie (page: $page, limit: $limit)', tag: 'ARTICLES');
 
       // Construire l'URL selon la structure Vue.js : /categorie/visiteurs
       final endpoint = '/categorie/$categorie';
@@ -42,10 +49,7 @@ class ArticlesService {
 
       final response = await _dio.get(endpoint, queryParameters: params);
 
-      if (EnvConfig.enableLogging) {
-        debugPrint('📡 Réponse API articles: ${response.statusCode}');
-        debugPrint('📄 Données reçues: ${response.data}');
-      }
+      AppLogger.apiCall('GET', endpoint, statusCode: response.statusCode, tag: 'ARTICLES');
 
       // La réponse peut être un objet avec data/meta ou directement un array
       List<dynamic> articlesList;
@@ -68,19 +72,14 @@ class ArticlesService {
           .map((json) => Article.fromJson(json as Map<String, dynamic>))
           .toList(); // Pour l'instant on prend tous les articles, on pourra filtrer plus tard
 
-      if (EnvConfig.enableLogging) {
-        debugPrint('✅ ${articles.length} articles chargés');
-        if (articles.isEmpty) {
-          debugPrint('⚠️ Aucun article trouvé dans la catégorie $categorie');
-        }
+      AppLogger.info('${articles.length} articles chargés', tag: 'ARTICLES');
+      if (articles.isEmpty) {
+        AppLogger.warning('Aucun article trouvé dans la catégorie $categorie', tag: 'ARTICLES');
       }
 
       return articles;
     } on DioException catch (e) {
-      if (EnvConfig.enableLogging) {
-        debugPrint('❌ Erreur DioException: ${e.type}');
-        debugPrint('📄 Détails erreur: ${e.response?.data ?? e.message}');
-      }
+      AppLogger.error('Erreur DioException: ${e.type}', tag: 'ARTICLES', error: e.response?.data ?? e.message);
 
       if (e.response != null) {
         final statusCode = e.response!.statusCode ?? 0;
@@ -109,16 +108,14 @@ class ArticlesService {
         );
       }
     } catch (e) {
-      if (EnvConfig.enableLogging) {
-        debugPrint('❌ Erreur générale: $e');
-      }
+      AppLogger.error('Erreur générale articles', tag: 'ARTICLES', error: e);
       throw ArticlesServiceException('Erreur inattendue: $e', 0);
     }
   }
 
-  /// Charge les articles pour la page d'accueil (catégorie 'visiteurs' pour la landing page)
+  /// Charge les articles pour la page d'accueil (catégorie 'accueil' pour la landing page)
   Future<List<Article>> getHomeArticles() {
-    return getArticlesByCategorie('visiteurs', page: 1, limit: 6);
+    return getArticlesByCategorie('accueil', page: 1, limit: 6);
   }
 
   /// Charge les articles d'informations
@@ -134,15 +131,11 @@ class ArticlesService {
   /// Charge un article spécifique par son ID
   Future<Article> getArticleById(int id) async {
     try {
-      if (EnvConfig.enableLogging) {
-        debugPrint('🔄 Chargement article ID: $id');
-      }
+      AppLogger.info('Chargement article ID: $id', tag: 'ARTICLES');
 
       final response = await _dio.get('/$id');
       
-      if (EnvConfig.enableLogging) {
-        debugPrint('📡 Article reçu: ${response.statusCode}');
-      }
+      AppLogger.apiCall('GET', '/$id', statusCode: response.statusCode, tag: 'ARTICLES');
 
       return Article.fromJson(response.data);
     } on DioException catch (e) {

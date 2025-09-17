@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
+import '../../../../core/utils/logger.dart';
 import '../../data/services/articles_service.dart';
 import '../../domain/models/article.dart';
 
@@ -58,11 +58,9 @@ class ArticlesNotifier extends StateNotifier<ArticlesState> {
     }
 
     try {
-      if (kDebugMode) {
-        debugPrint('🔄 Chargement des articles d\'accueil...');
-      }
+      AppLogger.info('Chargement des articles d\'accueil', tag: 'ARTICLES_PROVIDER');
 
-      // Charger depuis l'API uniquement
+      // Charger depuis l'API
       final articles = await _articlesService.getHomeArticles();
 
       state = state.copyWith(
@@ -72,33 +70,14 @@ class ArticlesNotifier extends StateNotifier<ArticlesState> {
         totalRecords: articles.length,
       );
 
-      if (kDebugMode) {
-        debugPrint('✅ ${articles.length} articles chargés depuis l\'API');
-      }
+      AppLogger.info('${articles.length} articles chargés depuis l\'API', tag: 'ARTICLES_PROVIDER');
     } catch (e) {
-      String errorMessage = 'Erreur inconnue';
-      
-      if (e.toString().contains('SocketException')) {
-        errorMessage = 'Pas de connexion internet disponible';
-      } else if (e.toString().contains('TimeoutException')) {
-        errorMessage = 'Délai de connexion dépassé';
-      } else if (e.toString().contains('HandshakeException')) {
-        errorMessage = 'Erreur de certificat SSL';
-      } else if (e.toString().contains('Connection refused')) {
-        errorMessage = 'Serveur indisponible';
-      } else {
-        errorMessage = 'Erreur réseau: ${e.toString()}';
-      }
-
-      if (kDebugMode) {
-        debugPrint('❌ Erreur chargement articles API: $e');
-        debugPrint('📱 Message d\'erreur: $errorMessage');
-      }
+      AppLogger.error('Erreur chargement articles API', tag: 'ARTICLES_PROVIDER', error: e);
 
       state = state.copyWith(
         articles: [],
         isLoading: false,
-        error: errorMessage,
+        error: 'Impossible de charger les articles: ${e.toString()}',
         totalRecords: 0,
       );
     }
@@ -128,3 +107,47 @@ final articleByIdProvider = FutureProvider.family<Article, int>((ref, id) async 
   final service = ref.watch(articlesServiceProvider);
   return service.getArticleById(id);
 });
+
+/// Provider pour la navigation entre articles
+final articleNavigationProvider = Provider.family<ArticleNavigation, int>((ref, currentArticleId) {
+  final articlesState = ref.watch(articlesProvider);
+  final articles = articlesState.articles;
+  
+  if (articles.isEmpty) {
+    return const ArticleNavigation();
+  }
+  
+  final currentIndex = articles.indexWhere((article) => article.id == currentArticleId);
+  
+  if (currentIndex == -1) {
+    return const ArticleNavigation();
+  }
+  
+  final hasPrevious = currentIndex > 0;
+  final hasNext = currentIndex < articles.length - 1;
+  
+  return ArticleNavigation(
+    previousArticle: hasPrevious ? articles[currentIndex - 1] : null,
+    nextArticle: hasNext ? articles[currentIndex + 1] : null,
+    currentIndex: currentIndex,
+    totalArticles: articles.length,
+  );
+});
+
+/// Classe pour la navigation entre articles
+class ArticleNavigation {
+  final Article? previousArticle;
+  final Article? nextArticle;
+  final int currentIndex;
+  final int totalArticles;
+  
+  const ArticleNavigation({
+    this.previousArticle,
+    this.nextArticle,
+    this.currentIndex = 0,
+    this.totalArticles = 0,
+  });
+  
+  bool get hasPrevious => previousArticle != null;
+  bool get hasNext => nextArticle != null;
+}

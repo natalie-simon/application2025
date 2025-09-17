@@ -17,6 +17,10 @@ class AppColors {
   static const Color error = Color(0xFFE53E3E);
   static const Color info = Color(0xFF3182CE);
   
+  // Couleurs d'arrière-plan
+  static const Color background = Color(0xFFF7FAFC);  // background principal
+  static const Color surface = Color(0xFFFFFFFF);     // cartes et surfaces
+  
   // Couleurs neutres
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);

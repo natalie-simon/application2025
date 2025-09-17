@@ -6,6 +6,8 @@ class AppTheme {
     useMaterial3: true,
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.white,
+    // Force Material Design sur toutes les plateformes
+    platform: TargetPlatform.android,
     
     // Color Scheme
     colorScheme: const ColorScheme.light(
@@ -101,6 +103,21 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
+    ),
+
+    // Drawer Theme pour uniformiser
+    drawerTheme: const DrawerThemeData(
+      backgroundColor: AppColors.white,
+      elevation: 16,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ),
+    ),
+
+    // ListTile Theme pour uniformiser
+    listTileTheme: const ListTileThemeData(
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      minLeadingWidth: 40,
     ),
     
     // Input Decoration Theme

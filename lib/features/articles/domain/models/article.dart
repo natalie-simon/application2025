@@ -8,8 +8,8 @@ class Article extends Equatable {
   final int id;
   final String titre;
   final String contenu;
-  final String statut; // "PUBLIE|BROUILLON|CORBEILLE"
-  final String categorie; // "VISITEURS|INFORMATIONS|ANNONCES"
+  final String? statut; // "PUBLIE|BROUILLON|CORBEILLE"
+  final String? categorie; // "VISITEURS|INFORMATIONS|ANNONCES"
   @JsonKey(name: 'date_creation')
   final DateTime? dateCreation;
   @JsonKey(name: 'date_modification')
@@ -21,8 +21,8 @@ class Article extends Equatable {
     required this.id,
     required this.titre,
     required this.contenu,
-    required this.statut,
-    required this.categorie,
+    this.statut,
+    this.categorie,
     this.dateCreation,
     this.dateModification,
     this.image,
@@ -32,7 +32,7 @@ class Article extends Equatable {
   // Propriétés de commodité pour la compatibilité
   String get title => titre;
   String get content => contenu;
-  String get status => statut;
+  String? get status => statut;
   DateTime? get createdAt => dateCreation;
   DateTime? get updatedAt => dateModification;
   
@@ -40,7 +40,7 @@ class Article extends Equatable {
   String? get mainImageUrl => image?.url;
   
   // Vérifie si l'article est publié
-  bool get isPublished => statut.toUpperCase() == 'PUBLIE';
+  bool get isPublished => statut?.toUpperCase() == 'PUBLIE';
 
   factory Article.fromJson(Map<String, dynamic> json) => _$ArticleFromJson(json);
   Map<String, dynamic> toJson() => _$ArticleToJson(this);

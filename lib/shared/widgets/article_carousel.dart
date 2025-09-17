@@ -170,7 +170,7 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
           children: [
             // Image de l'article
             Expanded(
-              flex: 2,
+              flex: 1,
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -213,7 +213,7 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
             
             // Contenu de l'article
             Expanded(
-              flex: 1,
+              flex: 2,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
@@ -246,17 +246,6 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    
-                    // Contenu (sans HTML)
-                    Text(
-                      _cleanHtmlContent(article.contenu),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -346,7 +335,8 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
     );
   }
 
-  Color _getStatusColor(String statut) {
+  Color _getStatusColor(String? statut) {
+    if (statut == null) return AppColors.grey500;
     switch (statut.toUpperCase()) {
       case 'PUBLIE':
         return AppColors.success;
@@ -359,7 +349,8 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
     }
   }
 
-  String _getStatusText(String statut) {
+  String _getStatusText(String? statut) {
+    if (statut == null) return 'Article';
     switch (statut.toUpperCase()) {
       case 'PUBLIE':
         return 'Publié';

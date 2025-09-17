@@ -1,8 +1,8 @@
-name: application
-description: A new Flutter project.
+name: assbt
+description: Association Sportive Sub-Aquatique des Bulleurs Toulonnais
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.7.3+1
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -18,7 +18,8 @@ dependencies:
   
   # HTTP & API (équivalent Axios)
   dio: ^5.3.4
-  json_annotation: ^4.9.0
+  http: ^1.1.0
+  json_annotation: ^4.8.1
   
   # JWT & Auth
   jwt_decoder: ^2.0.1
@@ -30,6 +31,8 @@ dependencies:
   # UI Components
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
+  image_picker: ^1.0.4
+  flutter_html: ^3.0.0-beta.2
   
   # Calendar (équivalent FullCalendar)
   table_calendar: ^3.0.9
@@ -41,6 +44,8 @@ dependencies:
   # Utils
   equatable: ^2.0.5
   intl: ^0.20.2
+  mime: ^1.0.4
+  http_parser: ^4.0.2
 
 dev_dependencies:
   flutter_test:
@@ -48,9 +53,31 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   json_serializable: ^6.7.1
   build_runner: ^2.4.7
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   
+  # Assets
   assets:
-    - assets/images/logo/
+    - assets/images/
+
+# Configuration pour les icônes de lancement
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#ffffff"
+    theme_color: "#134074"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/images/logo.png"

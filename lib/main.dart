@@ -1,72 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'core/theme/app_theme.dart';
-import 'core/config/env_config.dart';
-import 'features/home/presentation/screens/landing_screen.dart';
+import 'core/router/app_router.dart';
 
-void main() {
-  // Afficher la configuration au démarrage
-  EnvConfig.logConfig();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR', null);
   
-  runApp(const ProviderScope(child: AssbtApp()));
+  runApp(
+    const ProviderScope(
+      child: AssbtApp(),
+    ),
+  );
 }
 
-class AssbtApp extends StatelessWidget {
+class AssbtApp extends ConsumerWidget {
   const AssbtApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
       title: 'ASSBT App',
       theme: AppTheme.theme,
-      home: const LandingScreen(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
+      // Force Material Design sur toutes les plateformes
+      scrollBehavior: const MaterialScrollBehavior(),
     );
   }
 }
