@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/network/dio_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../domain/models/activity.dart';
 import '../../domain/models/activity_detail.dart';
@@ -8,28 +9,17 @@ class ActivitiesService {
   late final Dio _dio;
 
   ActivitiesService() {
-    _dio = Dio(BaseOptions(
+    // Utilisation de la configuration Dio sécurisée centralisée
+    _dio = DioConfig.createCustomDio(
       baseUrl: EnvConfig.activitiesBaseUrl,
-      connectTimeout: EnvConfig.connectionTimeout,
-      receiveTimeout: EnvConfig.apiTimeout,
-      headers: EnvConfig.defaultHeaders,
-    ));
+      headers: {
+        ...EnvConfig.defaultHeaders,
+        'X-Service': 'activities',
+      },
+    );
 
-    // Logging conditionnel basé sur la configuration d'environnement
-    if (EnvConfig.enableApiLogging) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        requestHeader: true,
-        responseHeader: false,
-        logPrint: (obj) => AppLogger.debug(obj.toString(), tag: 'ACTIVITIES_API'),
-      ));
-    }
-
-    // Log de la configuration au démarrage (debug uniquement)
-    if (EnvConfig.enableAppLogging) {
-      AppLogger.info('ActivitiesService configuré pour: ${EnvConfig.environmentName}', tag: 'ACTIVITIES_SERVICE');
-    }
+    // Log de la configuration au démarrage (respecte la config de logging)
+    AppLogger.info('ActivitiesService configuré pour: ${EnvConfig.environmentName}', tag: 'ACTIVITIES_SERVICE');
   }
 
   Future<List<Activity>> getActivities({String? token}) async {

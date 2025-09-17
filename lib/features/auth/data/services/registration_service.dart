@@ -1,11 +1,18 @@
 import 'package:dio/dio.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/network/dio_config.dart';
 import '../../../../core/utils/logger.dart';
 
 class RegistrationService {
   final Dio _dio;
-  
-  RegistrationService({Dio? dio}) : _dio = dio ?? Dio();
+
+  RegistrationService({Dio? dio}) : _dio = dio ?? DioConfig.createCustomDio(
+    baseUrl: EnvConfig.membersBaseUrl,
+    headers: {
+      ...EnvConfig.defaultHeaders,
+      'X-Service': 'registration',
+    },
+  );
 
   Future<Map<String, dynamic>?> registerMember({
     required String email,

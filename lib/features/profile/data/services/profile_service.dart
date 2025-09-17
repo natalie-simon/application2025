@@ -1,15 +1,27 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:mime/mime.dart';
-import 'package:http_parser/http_parser.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/network/dio_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../domain/models/profile.dart';
 
 class ProfileService {
-  static String get baseUrl => EnvConfig.profileBaseUrl;
+  late final Dio _dio;
+
+  ProfileService() {
+    // Utilisation de la configuration Dio sécurisée centralisée
+    _dio = DioConfig.createCustomDio(
+      baseUrl: EnvConfig.profileBaseUrl,
+      headers: {
+        ...EnvConfig.defaultHeaders,
+        'X-Service': 'profile',
+      },
+    );
+
+    // Log de la configuration au démarrage (respecte la config de logging)
+    AppLogger.info('ProfileService configuré pour: ${EnvConfig.environmentName}', tag: 'PROFILE_SERVICE');
+  }
 
   /// Récupérer le profil de l'utilisateur connecté depuis le JWT
   Future<Profile?> getCurrentProfile(String token) async {
@@ -76,81 +88,25 @@ class ProfileService {
 
       // Si pas d'avatar, utiliser une requête JSON simple
       if (avatarFile == null) {
-        final response = await http.put(
-          Uri.parse('$baseUrl/$profileId'),
-          headers: {
-            ...EnvConfig.defaultHeaders,
-            'Authorization': 'Bearer $token',
-          },
-          body: json.encode({
+        final response = await _dio.put(
+          '/$profileId',
+          data: {
             'nom': nom,
             'prenom': prenom,
             'telephone': telephone,
             'communication_mail': communicationMail,
             'communication_sms': communicationSms,
-          }),
-        );
-
-        AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
-        AppLogger.debug('Corps de la réponse: ${response.body}', tag: 'PROFILE_SERVICE');
-
-        if (response.statusCode == 200) {
-          final Map<String, dynamic> responseData = json.decode(response.body);
-          final profileData = responseData['data'] ?? responseData;
-
-          AppLogger.info('Profil mis à jour avec succès', tag: 'PROFILE_SERVICE');
-          return Profile.fromJson(profileData);
-        } else {
-          final errorMessage = 'Erreur lors de la mise à jour du profil: ${response.statusCode}';
-          AppLogger.error(errorMessage, tag: 'PROFILE_SERVICE');
-          
-          try {
-            final errorData = json.decode(response.body);
-            throw ProfileServiceException(errorData['message'] ?? errorMessage);
-          } catch (e) {
-            throw ProfileServiceException(errorMessage);
-          }
-        }
-      } else {
-        // Si avatar fourni, utiliser MultipartRequest
-        final request = http.MultipartRequest(
-          'PUT',
-          Uri.parse('$baseUrl/$profileId'),
-        );
-
-        // Ajouter tous les headers par défaut + authentification
-        request.headers.addAll(EnvConfig.defaultHeaders);
-        request.headers['Authorization'] = 'Bearer $token';
-
-        // Ajouter les champs texte
-        request.fields['nom'] = nom;
-        request.fields['prenom'] = prenom;
-        request.fields['telephone'] = telephone;
-        request.fields['communication_mail'] = communicationMail.toString();
-        request.fields['communication_sms'] = communicationSms.toString();
-
-        // Ajouter l'avatar
-        final mimeType = lookupMimeType(avatarFile.path);
-        final mediaType = mimeType != null ? MediaType.parse(mimeType) : MediaType('image', 'jpeg');
-
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'avatar',
-            avatarFile.path,
-            contentType: mediaType,
+          },
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
           ),
         );
 
-        AppLogger.debug('Données envoyées: nom=$nom, prenom=$prenom, telephone=$telephone', tag: 'PROFILE_SERVICE');
-
-        final streamedResponse = await request.send();
-        final response = await http.Response.fromStream(streamedResponse);
-
         AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
-        AppLogger.debug('Corps de la réponse: ${response.body}', tag: 'PROFILE_SERVICE');
+        AppLogger.debug('Corps de la réponse: ${response.data}', tag: 'PROFILE_SERVICE');
 
         if (response.statusCode == 200) {
-          final Map<String, dynamic> responseData = json.decode(response.body);
+          final Map<String, dynamic> responseData = response.data as Map<String, dynamic>;
           final profileData = responseData['data'] ?? responseData;
 
           AppLogger.info('Profil mis à jour avec succès', tag: 'PROFILE_SERVICE');
@@ -158,13 +114,46 @@ class ProfileService {
         } else {
           final errorMessage = 'Erreur lors de la mise à jour du profil: ${response.statusCode}';
           AppLogger.error(errorMessage, tag: 'PROFILE_SERVICE');
-          
-          try {
-            final errorData = json.decode(response.body);
-            throw ProfileServiceException(errorData['message'] ?? errorMessage);
-          } catch (e) {
-            throw ProfileServiceException(errorMessage);
-          }
+          throw ProfileServiceException(errorMessage);
+        }
+      } else {
+        // Si avatar fourni, utiliser FormData avec Dio
+        final formData = FormData.fromMap({
+          'nom': nom,
+          'prenom': prenom,
+          'telephone': telephone,
+          'communication_mail': communicationMail.toString(),
+          'communication_sms': communicationSms.toString(),
+          'avatar': await MultipartFile.fromFile(
+            avatarFile.path,
+            filename: avatarFile.path.split('/').last,
+          ),
+        });
+
+        AppLogger.debug('Données envoyées: nom=$nom, prenom=$prenom, telephone=$telephone', tag: 'PROFILE_SERVICE');
+
+        final response = await _dio.put(
+          '/$profileId',
+          data: formData,
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+            contentType: Headers.multipartFormDataContentType,
+          ),
+        );
+
+        AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
+        AppLogger.debug('Corps de la réponse: ${response.data}', tag: 'PROFILE_SERVICE');
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> responseData = response.data as Map<String, dynamic>;
+          final profileData = responseData['data'] ?? responseData;
+
+          AppLogger.info('Profil mis à jour avec succès', tag: 'PROFILE_SERVICE');
+          return Profile.fromJson(profileData);
+        } else {
+          final errorMessage = 'Erreur lors de la mise à jour du profil: ${response.statusCode}';
+          AppLogger.error(errorMessage, tag: 'PROFILE_SERVICE');
+          throw ProfileServiceException(errorMessage);
         }
       }
     } catch (e) {
@@ -184,34 +173,26 @@ class ProfileService {
     try {
       AppLogger.info('Upload d\'avatar', tag: 'PROFILE_SERVICE');
 
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/avatar'),
-      );
-
-      // Ajouter tous les headers par défaut + authentification
-      request.headers.addAll(EnvConfig.defaultHeaders);
-      request.headers['Authorization'] = 'Bearer $token';
-
-      // Détection du type MIME
-      final mimeType = lookupMimeType(imageFile.path);
-      final mediaType = mimeType != null ? MediaType.parse(mimeType) : MediaType('image', 'jpeg');
-
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'avatar',
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(
           imageFile.path,
-          contentType: mediaType,
+          filename: imageFile.path.split('/').last,
+        ),
+      });
+
+      final response = await _dio.post(
+        '/avatar',
+        data: formData,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          contentType: Headers.multipartFormDataContentType,
         ),
       );
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
 
       AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
+        final Map<String, dynamic> responseData = response.data as Map<String, dynamic>;
         final profileData = responseData['data'] ?? responseData;
 
         AppLogger.info('Avatar uploadé avec succès', tag: 'PROFILE_SERVICE');
@@ -237,12 +218,11 @@ class ProfileService {
     try {
       AppLogger.info('Suppression d\'avatar', tag: 'PROFILE_SERVICE');
 
-      final response = await http.delete(
-        Uri.parse('$baseUrl/avatar'),
-        headers: {
-          ...EnvConfig.defaultHeaders,
-          'Authorization': 'Bearer $token',
-        },
+      final response = await _dio.delete(
+        '/avatar',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
       );
 
       AppLogger.debug('Statut de la réponse: ${response.statusCode}', tag: 'PROFILE_SERVICE');
@@ -250,7 +230,7 @@ class ProfileService {
       if (response.statusCode == 200 || response.statusCode == 204) {
         // Récupérer le profil mis à jour
         final updatedProfile = await getCurrentProfile(token);
-        
+
         AppLogger.info('Avatar supprimé avec succès', tag: 'PROFILE_SERVICE');
         if (updatedProfile != null) {
           return updatedProfile;
