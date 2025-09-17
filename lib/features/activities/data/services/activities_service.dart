@@ -9,17 +9,16 @@ class ActivitiesService {
   late final Dio _dio;
 
   ActivitiesService() {
-    // Utilisation de la configuration Dio sécurisée centralisée
-    _dio = DioConfig.createCustomDio(
-      baseUrl: EnvConfig.activitiesBaseUrl,
-      headers: {
-        ...EnvConfig.defaultHeaders,
-        'X-Service': 'activities',
-      },
-    );
+    // Utilisation de la configuration Dio avec cache intelligent pour activités
+    _dio = DioConfig.createActivitiesDio(baseUrl: EnvConfig.activitiesBaseUrl);
+
+    // Ajouter les headers spécifiques au service
+    _dio.options.headers.addAll({
+      'X-Service': 'activities',
+    });
 
     // Log de la configuration au démarrage (respecte la config de logging)
-    AppLogger.info('ActivitiesService configuré pour: ${EnvConfig.environmentName}', tag: 'ACTIVITIES_SERVICE');
+    AppLogger.info('ActivitiesService configuré avec cache intelligent pour: ${EnvConfig.environmentName}', tag: 'ACTIVITIES_SERVICE');
   }
 
   Future<List<Activity>> getActivities({String? token}) async {

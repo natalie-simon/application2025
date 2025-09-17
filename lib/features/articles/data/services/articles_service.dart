@@ -8,17 +8,16 @@ class ArticlesService {
   late final Dio _dio;
 
   ArticlesService() {
-    // Utilisation de la configuration Dio sécurisée centralisée
-    _dio = DioConfig.createCustomDio(
-      baseUrl: EnvConfig.articlesBaseUrl,
-      headers: {
-        ...EnvConfig.defaultHeaders,
-        'X-Service': 'articles',
-      },
-    );
+    // Utilisation de la configuration Dio avec cache intelligent pour articles
+    _dio = DioConfig.createArticlesDio(baseUrl: EnvConfig.articlesBaseUrl);
+
+    // Ajouter les headers spécifiques au service
+    _dio.options.headers.addAll({
+      'X-Service': 'articles',
+    });
 
     // Log de la configuration au démarrage (respecte la config de logging)
-    AppLogger.info('ArticlesService configuré pour: ${EnvConfig.environmentName}', tag: 'ARTICLES_SERVICE');
+    AppLogger.info('ArticlesService configuré avec cache intelligent pour: ${EnvConfig.environmentName}', tag: 'ARTICLES_SERVICE');
   }
 
   /// Charge les articles par catégorie avec pagination (comme l'app Vue.js)

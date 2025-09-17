@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import '../config/env_config.dart';
 import '../utils/logger.dart';
 import 'secure_logging_interceptor.dart';
+import 'cache_config.dart';
 
 /// Configuration centralisée et sécurisée pour Dio
 /// Gère les interceptors, timeouts et paramètres selon l'environnement
@@ -39,6 +41,11 @@ class DioConfig {
     return dio;
   }
 
+  /// Initialise le système de cache (à appeler au démarrage de l'app)
+  static Future<void> initializeCache() async {
+    await CacheConfig.initialize();
+  }
+
   /// Ajoute les interceptors appropriés selon l'environnement
   static void _addInterceptors(Dio dio) {
     // Interceptor de logging sécurisé (toujours ajouté)
@@ -73,6 +80,7 @@ class DioConfig {
     String? baseUrl,
     Duration? timeout,
     Map<String, String>? headers,
+    DioCacheInterceptor? cacheInterceptor,
   }) {
     final dio = Dio();
 
@@ -86,10 +94,39 @@ class DioConfig {
       responseType: ResponseType.json,
     );
 
-    // Ajouter seulement l'interceptor de logging sécurisé
+    // Ajouter l'interceptor de cache si fourni
+    if (cacheInterceptor != null) {
+      dio.interceptors.add(cacheInterceptor);
+    }
+
+    // Ajouter l'interceptor de logging sécurisé
     dio.interceptors.add(SecureLoggingInterceptor());
 
     return dio;
+  }
+
+  /// Crée une instance Dio spécialisée pour les articles avec cache long
+  static Dio createArticlesDio({String? baseUrl}) {
+    return createCustomDio(
+      baseUrl: baseUrl,
+      cacheInterceptor: CacheConfig.articlesCache,
+    );
+  }
+
+  /// Crée une instance Dio spécialisée pour les activités avec cache moyen
+  static Dio createActivitiesDio({String? baseUrl}) {
+    return createCustomDio(
+      baseUrl: baseUrl,
+      cacheInterceptor: CacheConfig.activitiesCache,
+    );
+  }
+
+  /// Crée une instance Dio spécialisée pour le profil avec cache court
+  static Dio createProfileDio({String? baseUrl}) {
+    return createCustomDio(
+      baseUrl: baseUrl,
+      cacheInterceptor: CacheConfig.profileCache,
+    );
   }
 }
 

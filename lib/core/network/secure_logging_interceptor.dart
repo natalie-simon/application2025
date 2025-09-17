@@ -115,7 +115,7 @@ class SecureLoggingInterceptor extends Interceptor {
     // Masquer les paramètres sensibles dans l'URL
     for (final keyword in _sensitiveUrlKeywords) {
       final regex = RegExp('($keyword=)[^&]*', caseSensitive: false);
-      sanitized = sanitized.replaceAll(regex, '$keyword=***');
+      sanitized = sanitized.replaceAll(regex, '\$1***');
     }
 
     return sanitized;

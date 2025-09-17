@@ -10,17 +10,16 @@ class ProfileService {
   late final Dio _dio;
 
   ProfileService() {
-    // Utilisation de la configuration Dio sécurisée centralisée
-    _dio = DioConfig.createCustomDio(
-      baseUrl: EnvConfig.profileBaseUrl,
-      headers: {
-        ...EnvConfig.defaultHeaders,
-        'X-Service': 'profile',
-      },
-    );
+    // Utilisation de la configuration Dio avec cache intelligent pour profils
+    _dio = DioConfig.createProfileDio(baseUrl: EnvConfig.profileBaseUrl);
+
+    // Ajouter les headers spécifiques au service
+    _dio.options.headers.addAll({
+      'X-Service': 'profile',
+    });
 
     // Log de la configuration au démarrage (respecte la config de logging)
-    AppLogger.info('ProfileService configuré pour: ${EnvConfig.environmentName}', tag: 'PROFILE_SERVICE');
+    AppLogger.info('ProfileService configuré avec cache intelligent pour: ${EnvConfig.environmentName}', tag: 'PROFILE_SERVICE');
   }
 
   /// Récupérer le profil de l'utilisateur connecté depuis le JWT

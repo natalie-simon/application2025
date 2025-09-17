@@ -34,41 +34,54 @@ class ArticleCard extends StatelessWidget {
   }
 
   Widget _buildLargeCard(BuildContext context) {
-    return AssbtCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          _buildImage(context, height: 180),
-          const SizedBox(height: 16),
-          
-          // Titre
-          Text(
-            article.titre,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
+    return Semantics(
+      button: onTap != null,
+      container: true,
+      label: 'Article : ${article.titre}',
+      hint: onTap != null ? 'Appuyez pour lire l\'article complet' : 'Article en mode lecture seule',
+      value: '${_getStatusText()}, ${article.dateCreation != null ? _formatDate(article.dateCreation) : 'Date inconnue'}',
+      child: AssbtCard(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            _buildImage(context, height: 180),
+            const SizedBox(height: 16),
+
+            // Titre
+            Semantics(
+              header: true,
+              child: Text(
+                article.titre,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 12),
-          
-          // Contenu
-          Text(
-            _cleanHtmlContent(article.contenu),
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
+            const SizedBox(height: 12),
+
+            // Contenu
+            Semantics(
+              label: 'Aperçu de l\'article',
+              child: Text(
+                _cleanHtmlContent(article.contenu),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 16),
-          
-          // Footer avec date et statut
-          _buildFooter(context),
-        ],
+            const SizedBox(height: 16),
+
+            // Footer avec date et statut
+            _buildFooter(context),
+          ],
+        ),
       ),
     );
   }
@@ -157,48 +170,62 @@ class ArticleCard extends StatelessWidget {
   }
 
   Widget _buildImage(BuildContext context, {required double height, double? width}) {
-    return Container(
-      height: height,
-      width: width ?? double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: article.mainImageUrl != null
-          ? Image.network(
-              article.mainImageUrl!,
-              width: width ?? double.infinity,
-              height: height,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: width ?? double.infinity,
-                  height: height,
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  child: Icon(
-                    Icons.article,
-                    color: AppColors.primary,
-                    size: height * 0.3,
-                  ),
-                );
-              },
-            )
-          : Icon(
-              Icons.article,
-              color: AppColors.primary,
-              size: height * 0.3,
-            ),
+    return Semantics(
+      image: true,
+      label: article.mainImageUrl != null ? 'Image de l\'article : ${article.titre}' : 'Icône d\'article par défaut',
+      child: Container(
+        height: height,
+        width: width ?? double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: article.mainImageUrl != null
+            ? Image.network(
+                article.mainImageUrl!,
+                width: width ?? double.infinity,
+                height: height,
+                fit: BoxFit.cover,
+                semanticLabel: 'Image de l\'article : ${article.titre}',
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Semantics(
+                    label: 'Chargement de l\'image en cours',
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Semantics(
+                    label: 'Image non disponible',
+                    child: Container(
+                      width: width ?? double.infinity,
+                      height: height,
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      child: Icon(
+                        Icons.article,
+                        color: AppColors.primary,
+                        size: height * 0.3,
+                      ),
+                    ),
+                  );
+                },
+              )
+            : Semantics(
+                label: 'Icône d\'article par défaut',
+                child: Icon(
+                  Icons.article,
+                  color: AppColors.primary,
+                  size: height * 0.3,
+                ),
+              ),
+        ),
       ),
     );
   }
@@ -283,7 +310,7 @@ class ArticleCard extends StatelessWidget {
   }
 
   Color _getStatusColor() {
-    switch (article.statut.toUpperCase()) {
+    switch (article.statut?.toUpperCase()) {
       case 'PUBLIE':
         return AppColors.success;
       case 'BROUILLON':
@@ -296,7 +323,7 @@ class ArticleCard extends StatelessWidget {
   }
 
   String _getStatusText() {
-    switch (article.statut.toUpperCase()) {
+    switch (article.statut?.toUpperCase()) {
       case 'PUBLIE':
         return 'Publié';
       case 'BROUILLON':
@@ -304,7 +331,7 @@ class ArticleCard extends StatelessWidget {
       case 'CORBEILLE':
         return 'Archivé';
       default:
-        return article.statut;
+        return article.statut ?? 'Inconnu';
     }
   }
 
