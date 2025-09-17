@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/network/dio_config.dart';
 import '../../../../core/utils/logger.dart';
 import '../../domain/models/auth_response_v2.dart';
 import '../../domain/models/login_request.dart';
@@ -8,29 +9,17 @@ class AuthService {
   late final Dio _dio;
 
   AuthService() {
-    _dio = Dio(BaseOptions(
+    // Utilisation de la configuration Dio sécurisée centralisée
+    _dio = DioConfig.createCustomDio(
       baseUrl: EnvConfig.authBaseUrl,
-      connectTimeout: EnvConfig.connectionTimeout,
-      receiveTimeout: EnvConfig.apiTimeout,
-      headers: EnvConfig.defaultHeaders,
-    ));
+      headers: {
+        ...EnvConfig.defaultHeaders,
+        'X-Service': 'auth',
+      },
+    );
 
-    // Logging conditionnel basé sur la configuration d'environnement
-    if (EnvConfig.enableApiLogging) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        requestHeader: true,
-        responseHeader: false,
-        logPrint: (obj) => AppLogger.debug(obj.toString(), tag: 'AUTH_API'),
-      ));
-    }
-
-    // Log de la configuration au démarrage (debug uniquement)
-    if (EnvConfig.enableAppLogging) {
-      AppLogger.info('AuthService configuré pour: ${EnvConfig.environmentName}', tag: 'AUTH_SERVICE');
-      AppLogger.debug('Configuration: ${EnvConfig.debugInfo}', tag: 'AUTH_SERVICE');
-    }
+    // Log de la configuration au démarrage (respecte la config de logging)
+    AppLogger.info('AuthService configuré pour: ${EnvConfig.environmentName}', tag: 'AUTH_SERVICE');
   }
 
   /// Connexion utilisateur
